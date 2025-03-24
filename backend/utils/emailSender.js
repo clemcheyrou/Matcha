@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
 export const sendConfirmationEmail = async (email, token) => {
     const transporter = nodemailer.createTransport({
@@ -8,7 +9,7 @@ export const sendConfirmationEmail = async (email, token) => {
 		secure: true,
         auth: {
             user: 'clemcheyrou@gmail.com',
-            pass: 'xlqz gftc belm qhom',
+            pass: process.env.GOOGLE_PASS,
         },
     });
 
@@ -35,7 +36,7 @@ export const sendResetPasswordEmail = async (email, token) => {
 		secure: true,
         auth: {
             user: 'clemcheyrou@gmail.com',
-            pass: 'xlqz gftc belm qhom',
+            pass: process.env.GOOGLE_PASS,
         },
     });
 
