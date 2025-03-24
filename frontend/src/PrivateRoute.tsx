@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 export const PrivateRoute = () => {
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [onboarding, setOnboarding] = useState(null);
+	const location = useLocation();
 
     useEffect(() => {
         const checkAuthentication = async () => {
@@ -15,13 +17,13 @@ export const PrivateRoute = () => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log(data.authenticated)
                     setIsAuthenticated(data.authenticated);
+					setOnboarding(data.onboarding);
                 } else {
                     setIsAuthenticated(false);
                 }
             } catch (error) {
-                console.error('Authentication check failed:', error);
+                console.error('authentication check failed:', error);
                 setIsAuthenticated(false);
             } finally {
                 setLoading(false);
@@ -33,6 +35,10 @@ export const PrivateRoute = () => {
 
     if (loading) {
         return <div>Loading...</div>;
+    }
+
+	if (isAuthenticated && onboarding && ['/step1', '/step2', '/step3', '/step4'].includes(location.pathname)) {
+        return <Navigate to="/home" />;
     }
 
     if (!isAuthenticated) {

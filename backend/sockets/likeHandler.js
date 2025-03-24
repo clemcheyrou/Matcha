@@ -33,7 +33,7 @@ export const likeHandler = (socket) => {
 			await client.query("COMMIT");
 			const updatedProfile = await getUserById(likedUserId, userId);
 			socket.emit("profileUpdated", updatedProfile);
-
+			socket.emit("like", likedUserId);
 		} catch (error) {
 			await client.query("ROLLBACK");
 			console.error("error:", error);
@@ -111,10 +111,11 @@ export const likeHandler = (socket) => {
 			handleUnlike(userId, likedUserId, rowCount > 0);
 			const updatedProfile = await getUserById(likedUserId, userId);
 			socket.emit("profileUpdated", updatedProfile);
+			socket.emit("unlike", likedUserId);
 			socket.to(users[likedUserId]).emit("profileUpdated", updatedProfile);
 		} catch (error) {
 			await client.query("ROLLBACK");
-			console.error("Error processing unlike:", error);
+			console.error("error processing unlike:", error);
 		} finally {
 			client.release();
 		}

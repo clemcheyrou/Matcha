@@ -10,7 +10,7 @@ type GridProps = {
 	viewMode: "discovery" | "matched";
 };
 
-export const Grid: React.FC<GridProps> = ({ viewMode}) => {
+export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 	const discoverData = useDiscoverNewUsers();
 	const matchedData = useMatchedUsers();
 
@@ -19,78 +19,122 @@ export const Grid: React.FC<GridProps> = ({ viewMode}) => {
 
 	const toggleLike = (like: number, user_like: boolean) => {
 		if (user_like) {
+			console.log(user_like)
 			socket.emit("unlike", like);
 		} else {
 			socket.emit("like", like);
 		}
 	};
-
 	console.log(users)
 	if (loading) return <p className="text-center mt-4">Loading...</p>;
-	if (error) return <p className="text-center mt-32 mx-6">You're too beautiful to be left alone, so don't wait any longer to check out discovery 💕</p>;
 	return (
-		<div className="overflow-y-scroll pt-4 mx-1">
-			<div className="grid grid-cols-3 gap-2">
-				{users.length > 0 ? users.map((user) => (
-					<div
-						key={user.id}
-						className="bg-white shadow-md rounded-lg text-center h-48 flex flex-col justify-center items-center relative"
-					>
-						<Link
-							to={`/user/${user.id}`}
-							className="absolute inset-0"
-						>
-							<img
-								src={`${process.env.REACT_APP_API_URL}${user.profile_photo}`}
-								alt={user.name}
-								className="w-full h-full object-cover rounded-lg"
-							/>
-							<div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg">
-								<div className="absolute left-3 bottom-3 text-left">
-									<p className="text-white text-xl m-0">
-										{user.age}
-									</p>
-									<div className="flex items-center gap-x-2">
-										<p className="text-white m-0">
-											{user.name}
-										</p>
-										<div
-											className={`h-2 w-2 rounded ${
-												user.is_connected
-													? "bg-green-500"
-													: "bg-red-500"
-											}`}
-										></div>
-									</div>
-								</div>
-							</div>
-						</Link>
+		<div className="overflow-y-scroll pt-4">
+			<div className="overflow-y-scroll pt-4 mx-1">
+				{error ? (
+					<div className="text-center text-red-500">
+						You're too beautiful to be left alone, so don't wait any longer
+						to check out discovery 💕
+					</div>
+				) : (
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+						{users.length > 0 && (
+							users.map((user) => (
+								<div
+									key={user.id}
+									className="bg-white shadow-md rounded-lg text-center h-60 flex flex-col justify-center items-center relative"
+								>
+									<Link
+										to={`/user/${user.id}`}
+										className="absolute inset-0"
+									>
+										<img
+											src={`${process.env.REACT_APP_API_URL}${user.profile_photo}`}
+											alt={user.name}
+											className="w-full h-full object-cover rounded-lg"
+										/>
+										<div className="absolute inset-0 bg-black bg-opacity-50 rounded-md">
+											<div className="absolute left-3 bottom-10 text-left">
+												<p className="text-white text-xl m-0">
+													{user.age}
+												</p>
 
-						<div
-							className="absolute top-2 right-2 w-6 h-6 text-white cursor-pointer"
-							onClick={() => toggleLike(user.id, user.liked_by_user)}
-						>
-							{user.liked_by_user ? (
-								<RiHeart3Fill className="w-full h-full" />
-							) : (
-								<RiHeart3Line className="w-full h-full" />
-							)}
-						</div>
-						{user.liked_by_other && (
-							<div className="flex space-x-1 align-content items-center absolute bottom-3 right-2 h-6 p-1 text-bg bg-gradient-to-r from-[#f59e0b] via-[#fcd34d] to-[#fcd34d] text-xs rounded">
-									<RiHandHeartFill />
-									<div>Like</div>
-							</div>
-						)}
-						{user.distance_km && (
-							<div className="flex space-x-1 align-content items-center absolute top-3 left-2 h-6 p-1 text-white bg-bg text-xs rounded">
-									<div>{user.distance_km.toFixed(1)}km</div>
-							</div>
+												<div className="flex items-center gap-x-2">
+													<p className="text-white m-0">
+														{user.name}
+													</p>
+													<div
+														className={`h-2 w-2 rounded ${
+															user.is_connected
+																? "bg-green-500"
+																: "bg-red-500"
+														}`}
+													/>
+											</div>
+											</div>
+										</div>
+									</Link>
+	
+									<div className="absolute bottom-0 left-2">
+									{user.interests && user.interests.length > 0 && (
+									<div className="mb-2">
+										<div className="flex flex-wrap gap-2 justify-center">
+											{user.interests.slice(0, 2).map((interest, index) => (
+												<span
+													key={index}
+													className="bg-gray-100 text-xs text-black px-2 py-1 rounded-md text-sm capitalize"
+												>
+													{interest}
+												</span>
+											))}
+											
+											{user.interests.length > 2 && (
+												<div
+													className="bg-gray-200 text-xs text-black px-2 py-1 rounded-md text-sm capitalize cursor-pointer"
+													title={user.interests.slice(2).join(', ')}
+												>
+													+ {user.interests.length - 2}
+												</div>
+											)}
+										</div>
+									</div>
+								)}
+									</div>
+
+	
+									<div
+										className="absolute top-2 right-2 w-6 h-6 text-white cursor-pointer"
+										onClick={() =>
+											toggleLike(user.id, user.liked_by_user)
+										}
+									>
+										{user.liked_by_user ? (
+											<RiHeart3Fill className="w-full h-full" />
+										) : (
+											<RiHeart3Line className="w-full h-full" />
+										)}
+									</div>
+	
+									{user.liked_by_other && (
+										<div className="flex space-x-1 align-content items-center absolute bottom-3 right-2 h-6 p-1 text-bg bg-gradient-to-r from-[#f59e0b] via-[#fcd34d] to-[#fcd34d] text-xs rounded">
+											<RiHandHeartFill />
+											<div>Like</div>
+										</div>
+									)}
+	
+									{user.distance_km && (
+										<div className="flex space-x-1 align-content items-center absolute top-3 left-2 h-6 p-1 text-white text-xs rounded">
+											<div className="bg-bg p-1 rounded-md">
+												{user.distance_km.toFixed(1)} km
+											</div>
+												<span className="text-xs ml-2">🔥 {user.fame_count}</span>
+										</div>
+									)}
+								</div>
+							))
 						)}
 					</div>
-				)) : <p className="text-center mt-32 mx-6">You're too beautiful to be left alone, so don't wait any longer to check out discovery 💕</p>
-				}
+				)}
 			</div>
 		</div>
 	);
-};
+};	

@@ -28,8 +28,10 @@ const fileFilter = (req, file, cb) => {
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Format de fichier non valide. Seules les images JPEG, PNG, et GIF sont autorisées.'), false);
-  }
+    cb(null, false);
+    const errorMessage = 'file format is not valid, only JPEG, PNG, and GIF are allowed.';
+    console.warn(`File rejected: ${errorMessage}`);
+}
 };
 
 const upload = multer({
@@ -39,25 +41,21 @@ const upload = multer({
 });
 
 router.post('/', upload.single('photo'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'Aucun fichier téléchargé.' });
-  }
+  if (!req.file)
+    return res.status(400).json({ message: 'no file download' });
 
   const fileUrl = `/uploads/${req.file.filename}`;
-
   const userId = req.session.userId;
 
-  if (!userId) {
-    return res.status(401).json({ message: 'Utilisateur non authentifié.' });
-  }
+  if (!userId)
+    return res.status(401).json({ message: 'user not authenticated' });
   
   const checkPhotosQuery = 'SELECT id FROM photos WHERE user_id = $1';
   const checkPhotosValues = [userId];
   
   pool.query(checkPhotosQuery, checkPhotosValues, (err, result) => {
     if (err) {
-      console.error('Erreur lors de la vérification des photos de l\'utilisateur:', err);
-      return res.status(500).json({ message: 'Erreur serveur lors de la vérification des photos.' });
+      return res.status(500).json({ message: 'error' });
     }
   
     const hasPhotos = result.rows.length > 0;
@@ -69,8 +67,7 @@ router.post('/', upload.single('photo'), (req, res) => {
   
     pool.query(insertPhotoQuery, insertPhotoValues, (err, result) => {
       if (err) {
-        console.error('Erreur lors de l\'insertion de la photo:', err);
-        return res.status(500).json({ message: 'Erreur serveur lors de l\'insertion de la photo.' });
+        return res.status(500).json({ message: 'error' });
       }
   
       const newPhotoId = result.rows[0].id;
@@ -81,18 +78,17 @@ router.post('/', upload.single('photo'), (req, res) => {
   
         pool.query(updateUserQuery, updateUserValues, (err, result) => {
           if (err) {
-            console.error('Erreur lors de la mise à jour de la photo de profil:', err);
-            return res.status(500).json({ message: 'Erreur serveur lors de la mise à jour de la photo de profil.' });
+            return res.status(500).json({ message: 'error updating profile photo' });
           }
   
           res.status(200).json({
-            message: 'Photo de profil ajoutée avec succès !',
+            message: 'profile photo successfully updated',
             profile_picture_url: fileUrl,
           });
         });
       } else {
         res.status(200).json({
-          message: 'Photo normale ajoutée avec succès !',
+          message: 'normal photo successfully added',
           url: fileUrl,
         });
       }

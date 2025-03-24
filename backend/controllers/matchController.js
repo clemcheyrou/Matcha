@@ -31,8 +31,8 @@ export const discoverNewUsers = async (req, res) => {
 			fameRange: [fameMin ? Number(fameMin) : null, fameMax ? Number(fameMax) : null],
 			tags: tags ? tags.split(',') : [],
 		};
+
 		const users = await findUsersByPreference(userId, filters);
-		console.log(users)
 		res.json(users);
 	} catch (err) {
 		console.error(err);

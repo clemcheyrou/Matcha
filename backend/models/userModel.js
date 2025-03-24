@@ -85,41 +85,19 @@ export const findUsersByPreference = async (userId, filters) => {
         values.push(filters.locationRange[0], filters.locationRange[1]);
     }
 
-    //if (filters.fameRange && filters.fameRange.length === 2) {
-    //    conditions.push("COALESCE((like_count) / NULLIF(total_actions, 0), 0) BETWEEN $7 AND $8");
-    //    values.push(filters.fameRange[0], filters.fameRange[1]);
-    //}
-
-    if (filters.tags && filters.tags.length > 0) {
-        const tagConditions = filters.tags.map((_, index) => `u.interests ILIKE $${9 + index}`).join(" OR ");
-        conditions.push(`(${tagConditions})`);
-        filters.tags.forEach(tag => values.push(`%${tag}%`));
+    if (filters.fameRange && filters.fameRange.length === 2) {
+        conditions.push(`(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) BETWEEN $${values.length + 1} AND $${values.length + 2}`);
+        values.push(filters.fameRange[0], filters.fameRange[1]);
     }
 
-	switch (filters.sortBy) {
-		case "ageAsc":
-		  orderByClause = "ORDER BY u.age ASC";
-		  break;
-		case "ageDesc":
-		  orderByClause = "ORDER BY u.age DESC";
-		  break;
-		case "loc":
-		  orderByClause = "ORDER BY distance_km ASC";
-		  break;
-		// case "popAsc":
-		//   orderByClause = "ORDER BY fame ASC";
-		//   break;
-		// case "popDesc":
-		//   orderByClause = "ORDER BY fame DESC";
-		//   break;
-		// case "tag":
-		//   orderByClause = "ORDER BY tag_common_count DESC";
-		//   break;
-		default:
-		  orderByClause = "";
-	  }
+    if (filters.tags && filters.tags.length > 0) {
+        const tagIndexStart = values.length + 1;  // Début des paramètres pour les tags
+        const tagConditions = `u.interests && ARRAY[${filters.tags.map((tag, index) => `$${tagIndexStart + index}`).join(", ")}]`;
+        conditions.push(tagConditions);
+        values.push(...filters.tags);
+    }
 
-    const query = `
+    let query = `
         SELECT 
             u.id, 
             u.name, 
@@ -134,34 +112,45 @@ export const findUsersByPreference = async (userId, filters) => {
                 cos(radians(loc2.lng) - radians(loc1.lng)) +
                 sin(radians(loc1.lat)) * sin(radians(loc2.lat))
             ) AS distance_km,
-            CASE 
-                WHEN l.user_id IS NOT NULL THEN true
-                ELSE false
-            END AS liked_by_user,
-            CASE
-                WHEN l2.user_id IS NOT NULL THEN true
-                ELSE false
-            END AS liked_by_other
+            (SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) AS fame_count, 
+            CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
+            CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
         FROM 
             users u
-        LEFT JOIN 
-            photos p ON u.profile_photo_id = p.id
-        LEFT JOIN 
-            matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
-        LEFT JOIN 
-            likes l ON l.user_id = $1 AND l.liked_user_id = u.id
-        LEFT JOIN 
-            likes l2 ON l2.user_id = u.id AND l2.liked_user_id = $1
-        LEFT JOIN 
-            blocks b ON b.user_id = $1 AND b.blocked_user_id = u.id
-        LEFT JOIN 
-            locations loc1 ON loc1.user_id = u.id
-        LEFT JOIN 
-            locations loc2 ON loc2.user_id = $1
-        WHERE 
-            ${conditions.join(" AND ")}
-        ${orderByClause}
+        LEFT JOIN photos p ON u.profile_photo_id = p.id
+        LEFT JOIN matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
+        LEFT JOIN likes l ON l.user_id = $1 AND l.liked_user_id = u.id
+        LEFT JOIN likes l2 ON l2.user_id = u.id AND l2.liked_user_id = $1
+        LEFT JOIN blocks b ON b.user_id = $1 AND b.blocked_user_id = u.id
+        LEFT JOIN locations loc1 ON loc1.user_id = u.id
+        LEFT JOIN locations loc2 ON loc2.user_id = $1
+        WHERE ${conditions.join(" AND ")}
     `;
+
+    if (filters.sortBy) {
+        if (filters.sortBy === "tag" && filters.tags.length > 0) {
+			orderByClause = `
+				ORDER BY (
+					SELECT COUNT(*) 
+					FROM unnest(u.interests::text[]) AS interest
+					WHERE interest ILIKE ANY(ARRAY[${filters.tags.map((tag, index) => `$${values.length + index + 1}`).join(", ")}])
+				) DESC
+			`;
+			values.push(...filters.tags);
+        } else if (filters.sortBy === "ageAsc") {
+            orderByClause = "ORDER BY u.age ASC";
+        } else if (filters.sortBy === "ageDesc") {
+            orderByClause = "ORDER BY u.age DESC";
+        } else if (filters.sortBy === "loc") {
+            orderByClause = "ORDER BY distance_km ASC";
+        } else if (filters.sortBy === "popAsc") {
+            orderByClause = "ORDER BY fame_count ASC";
+        } else if (filters.sortBy === "popDesc") {
+            orderByClause = "ORDER BY fame_count DESC";
+        }
+    }
+
+    query += orderByClause;
 
     const result = await pool.query(query, values);
     return result.rows;

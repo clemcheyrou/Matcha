@@ -15,7 +15,7 @@ export type User = {
 	reported_by_user: boolean;
 	distance_km: number;
 	photos: string[];
-	fame: string;
+	fame_count: number;
 };
 
 export type View = {

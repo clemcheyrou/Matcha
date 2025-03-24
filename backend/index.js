@@ -101,15 +101,20 @@ io.on("connection", async (socket) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get("/api/auth/status", (req, res) => {
-		if (req.session.userId) {
-			console.log('user is authenticated');
-			res.json({ authenticated: true });
-		} else {
-			console.log('user is not authenticated');
-			res.json({ authenticated: false });
-		}	
-});
+app.get("/api/auth/status", async (req, res) => {
+	if (req.session.userId) {
+	  try {
+		const result = await pool.query('SELECT onboarding FROM users WHERE id = $1', [req.session.userId]);
+		const onboarding = result.rows[0];
+		res.json({ authenticated: true, onboarding });
+	  } catch (err) {
+		console.error('error', err);
+		res.status(500).json({ authenticated: false, error: 'server error' });
+	  }
+	} else {
+	  res.json({ authenticated: false });
+	}
+ });
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api/auth", authRoutes);

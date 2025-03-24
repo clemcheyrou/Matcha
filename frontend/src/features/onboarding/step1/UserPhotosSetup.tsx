@@ -55,7 +55,7 @@ export const UserPhotosSetup = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const isNextDisabled = photos.length !== 5;
+  const isNextDisabled = photos.length < 5;
 
   return (
     <div className="mb-16 h-screen w-screen text-white px-6 md:px-28 lg:px-96 pb-16">
