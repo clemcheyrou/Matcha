@@ -42,3 +42,18 @@ export const markAsReadController = async (req, res) => {
         });
     }
 };
+
+export const formatNotification = (message, senderId, type) => {
+	const notification = {
+	  id: Date.now(),
+	  eventDate: new Date(),
+	  eventTitle: '',
+	  type: type,
+	  sender_id: senderId,
+	  message: message,
+	  is_read: false,
+	  created_at: new Date(),
+	};
+  
+	return notification;
+};

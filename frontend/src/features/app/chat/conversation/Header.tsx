@@ -8,7 +8,7 @@ type HeaderProps = {
 }
 
 export const Header: React.FC<HeaderProps> = ({ chatId }) => {
-	const { name, profileImage } = useHeaderChat(chatId);
+	const { name, is_connected, profileImage } = useHeaderChat(chatId);
 
 	return (
 	<div className="flex items-center p-4 align-content">
@@ -20,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({ chatId }) => {
 		/>
 		<div className='ml-4'>
 			<h2 className="mt-0 text-lg font-semibold opacity-100">{name}</h2>
-			<p className="mt-0 text-xs font-semibold opacity-60">offline</p>
+			<p className="mt-0 text-xs font-semibold opacity-60">{is_connected ? 'online' : 'offline'} </p>
 		</div>
 	</div>
   );

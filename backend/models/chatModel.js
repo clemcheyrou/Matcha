@@ -29,7 +29,10 @@ export const getAllChats = async (userId) => {
 			u2.name AS user_2_name,
 			p1.url AS user_1_profile_photo,
 			p2.url AS user_2_profile_photo,
-			last_message.message AS last_message,
+			CASE 
+				WHEN last_message.audio_path IS NOT NULL THEN 'A voice message has been sent'
+				ELSE last_message.message
+			END AS last_message,
 			last_message.created_at AS last_message_created_at,
 			CASE 
 				WHEN last_message.author_id = $1 THEN TRUE
@@ -41,7 +44,7 @@ export const getAllChats = async (userId) => {
 		LEFT JOIN photos p1 ON u1.profile_photo_id = p1.id
 		LEFT JOIN photos p2 ON u2.profile_photo_id = p2.id
 		LEFT JOIN (
-			SELECT message.conversation_id, message.message, message.created_at, message.is_read, message.author_id
+			SELECT message.conversation_id, message.message, message.created_at, message.is_read, message.author_id, message.audio_path
 			FROM message
 			WHERE message.conversation_id IN (
 				SELECT chat.id
@@ -64,7 +67,9 @@ export const getChatInfo = async (chatId) => {
 		u1.name AS user_1_name,
 		u2.name AS user_2_name,
 		p1.url AS user_1_profile_photo,
-		p2.url AS user_2_profile_photo
+		p2.url AS user_2_profile_photo,
+		u1.is_connected AS user_1_connected,
+		u2.is_connected AS user_2_connected
 	  FROM chat
 	  LEFT JOIN users u1 ON chat.user_1_id = u1.id
 	  LEFT JOIN users u2 ON chat.user_2_id = u2.id

@@ -15,6 +15,7 @@ const formatDate = (date: string) => {
 
 export const ChatList: React.FC = () => {
   const { chats } = useChats();
+
   return (
 	<div className="w-full rounded-md py-4">
 	  {chats.length === 0 ? (

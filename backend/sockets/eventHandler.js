@@ -3,6 +3,7 @@ import { users } from "../index.js";
 import { createEvent, createUserEvent } from "../models/eventModel.js";
 import { createNotification } from "../models/notificationModel.js";
 import { getUserOtherId } from "../models/chatModel.js";
+import { formatNotification } from "../controllers/notificationController.js";
 
 export const eventHandler = (socket) => {
 	socket.on("create-event-and-invite", async (message) => {
@@ -23,7 +24,7 @@ export const eventHandler = (socket) => {
 			
 			const formattedDate = `${day < 10 ? '0' : ''}${day}/${month < 10 ? '0' : ''}${month}/${year}`;
 			await createNotification(otherUserId, "event", currentUserId, `Meet up ${otherUserId} : ${formattedDate}`);
-			socket.to(otherSocketId).emit("notification", `${otherUserId} want to see you.`);
+			socket.to(otherSocketId).emit("notification", formatNotification(`${otherUserId} want to see you.`, currentUserId, 'event'));
 		} catch (err) {
 			socket.emit("error", { message: "error creating event." });
 		}
@@ -55,7 +56,7 @@ export const eventHandler = (socket) => {
 			const recipientSocketId = users[creatorId];
 
 			if (recipientSocketId)
-				socket.to(recipientSocketId).emit("notification",`User ${userId} has ${updatedStatus} your event invitation.`);
+				socket.to(recipientSocketId).emit("notification", formatNotification(`User ${userId} has ${updatedStatus} your event invitation.`, userId,'event'));
 		} catch (error) {
 			socket.emit("error", {
 				message: "error responding to invitation.",

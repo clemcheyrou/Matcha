@@ -1,3 +1,4 @@
+import { formatNotification } from "../controllers/notificationController.js";
 import { users } from "../index.js";
 import { createNotification } from "../models/notificationModel.js";
 import { getUserById } from "../models/userModel.js";
@@ -60,14 +61,14 @@ export const likeHandler = (socket) => {
 
 		await createNotification(likedUserId, 'unlike', userId, `You and ${nameLiked} are now a match`);
 		await createNotification(userId, 'unlike', likedUserId, `You and ${name} are now a match`);
-		socket.emit("notification", `You and ${nameLiked} are now a match`);
+		socket.emit("notification", formatNotification(`You and ${nameLiked} are now a match`, userId, 'unlike'));
 		const updatedMatch = await getUserById(likedUserId, userId);
-		console.log(updatedMatch)
 		socket.emit("match", updatedMatch);
+		const updatedUnMatch2 = await getUserById(userId, likedUserId);
+		socket.to(likedUserSocketId).emit("match", updatedUnMatch2);
 		socket
 			.to(likedUserSocketId)
-			.emit("notification", `You and ${name} are now a match`);
-		socket.to(likedUserSocketId).emit("match", userId);
+			.emit("notification", formatNotification(`You and ${name} are now a match`, userId, 'unlike'));
 	}
 
 	async function notifyLike(userId, likedUserId) {
@@ -81,7 +82,7 @@ export const likeHandler = (socket) => {
 			userId,
 			`${name} likes you!`
 		);
-		socket.to(likedUserSocketId).emit("notification", `${name} likes you!`);
+		socket.to(likedUserSocketId).emit("notification", formatNotification(`${name} likes you!`, userId, 'like'));
 	}
 
 	socket.on("unlike", async (likedUserId) => {
@@ -125,24 +126,16 @@ export const likeHandler = (socket) => {
 
 	async function handleUnlike(userId, likedUserId, wasMatched) {
 		const likedUserSocketId = users[likedUserId];
-		const user = await getUserById(userId);
+		const user = await getUserById(userId, likedUserId);
 		const name = user.name;
-
-		if (likedUserSocketId)
-			await createNotification(
-				likedUserId,
-				"unlike",
-				userId,
-				`${name} unliked you!`
-			);
-		socket
-			.to(likedUserSocketId)
-			.emit("notification", `${name} unliked you`);
+		await createNotification(likedUserId, "unlike" ,userId,`${name} unlikes you!`);
+		socket.to(likedUserSocketId).emit('notification', formatNotification(`${name} unlikes you!`, userId, 'like'));
 
 		if (wasMatched) {
-			socket.to(likedUserSocketId).emit("unmatch", userId);
 			const updatedUnMatch = await getUserById(likedUserId, userId);
 			socket.emit("unmatch", updatedUnMatch);
+			const updatedUnMatch2 = await getUserById(userId, likedUserId);
+			socket.to(likedUserSocketId).emit("unmatch", updatedUnMatch2);
 		}
 	}
 };

@@ -2,6 +2,8 @@ import pool from "../utils/db.js";
 import fs from "fs";
 import path from "path";
 import { users } from "../index.js";
+import { createNotification } from "../models/notificationModel.js";
+import { formatNotification } from "../controllers/notificationController.js";
 
 export const audioHandler = (socket) => {
 	socket.on("audio-message", async (message) => {
@@ -22,7 +24,13 @@ export const audioHandler = (socket) => {
 			);
 
 			const result = await pool.query(
-				`SELECT user_1_id, user_2_id FROM chat WHERE id = $1`,
+				`SELECT chat.*,
+						u1.name AS user_1_name,
+						u2.name AS user_2_name
+				 FROM chat
+				 LEFT JOIN users u1 ON chat.user_1_id = u1.id
+				 LEFT JOIN users u2 ON chat.user_2_id = u2.id
+				 WHERE chat.id = $1`,
 				[chat_id]
 			);
 
@@ -31,6 +39,7 @@ export const audioHandler = (socket) => {
 				conversation.user_1_id === authorId
 					? conversation.user_2_id
 					: conversation.user_1_id;
+			const name = conversation.user_1_id == authorId ? conversation.user_2_name : conversation.user_1_name;
 
 			const newMessage = {
 				id: insertResult.rows[0].id,
@@ -44,9 +53,9 @@ export const audioHandler = (socket) => {
 				socket.to(recipientSocketId).emit("receiveMessage", newMessage);
 				socket
 					.to(recipientSocketId)
-					.emit("notification", "receive audio message");
+					.emit("notification", formatNotification(`Receive audio message from ${name}`, authorId, 'message'));
 			}
-
+			await createNotification(user2Id, 'message', authorId, `Receive audio message from ${name}`);
 			socket.emit("messageSent", newMessage);
 		} catch (err) {
 			socket.emit("error", { message: "error sending message" });

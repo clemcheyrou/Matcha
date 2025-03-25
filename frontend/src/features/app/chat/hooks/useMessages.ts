@@ -23,27 +23,25 @@ export const useMessages = (chatId: number) => {
   const user = useSelector((state: any) => state.auth.user);
   const userId: number = user?.id;
 
-//  const markMessagesAsRead = async () => {
-//    try {
-//      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/chat/${chatId}/messages/mark-read`, {
-//        method: 'POST',
-//        credentials: 'include',
-//      });
+  const markMessagesAsRead = async () => {
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/chat/${chatId}/messages/mark-read`, {
+        method: 'POST',
+        credentials: 'include',
+      });
   
-//      if (!res.ok) {
-//        throw new Error('error marking messages as read: ' + res.statusText);
-//      }
+      if (!res.ok) {
+        throw new Error('error marking messages as read: ' + res.statusText);
+      }
   
-//      const data = await res.json();
-//	  console.log(data)
-//    } catch (err) {
-//      console.error('error marking messages as read:', err);
-//    }
-//  };
+      const data = await res.json();
+	  console.log(data)
+    } catch (err) {
+      console.error('error marking messages as read:', err);
+    }
+  };
 
   useEffect(() => {
-    if (!userId) return;
-
     fetch(`${process.env.REACT_APP_API_URL}/api/chat/${chatId}/messages`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => {
@@ -57,15 +55,16 @@ export const useMessages = (chatId: number) => {
 		  audio_path: msg.audio_path
         }));
         setMessages(formattedMessages);
-        //markMessagesAsRead();
+		console.log(formattedMessages)
+        markMessagesAsRead();
       })
       .catch((err) => console.error('Error fetching messages:', err));
 
     const handleReceiveMessage = (message: Message) => {
       setMessages((prev) => [...prev, message]);
-    //  if (message.author_id !== userId) {
-    //    markMessagesAsRead();
-    //  }
+      if (message.author_id !== userId) {
+        markMessagesAsRead();
+      }
     };
 
     socket.on('receiveMessage', handleReceiveMessage);
@@ -73,7 +72,7 @@ export const useMessages = (chatId: number) => {
     return () => {
       socket.off('receiveMessage', handleReceiveMessage);
     };
-  }, [chatId, userId, socket]);
+  }, [chatId]);
 
   const sendMessage = () => {
     const message: Message = {
@@ -85,7 +84,7 @@ export const useMessages = (chatId: number) => {
       author_id: userId,
       created_at: new Date().toISOString(),
     };
-
+	
     socket.emit('sendMessage', message);
     setMessages((prev) => [...prev, message]);
     setNewMessage('');
@@ -106,5 +105,5 @@ export const useMessages = (chatId: number) => {
 	setNewAudio('');
   };
 
-  return { messages, newMessage, setNewMessage, sendMessage, sendAudio, setNewAudio};
+  return { messages, newMessage, setNewMessage, sendMessage, sendAudio, setNewAudio, markMessagesAsRead};
 };

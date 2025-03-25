@@ -3,11 +3,13 @@ import { useState, useEffect } from 'react';
 type ChatHeaderData = {
   name: string;
   profileImage: string;
+  is_connected: boolean;
 };
 
 export const useHeaderChat = (chatId: number): ChatHeaderData => {
   const [headerData, setHeaderData] = useState<ChatHeaderData>({
     name: '',
+	is_connected: false,
     profileImage: '',
   });
 
@@ -18,6 +20,7 @@ export const useHeaderChat = (chatId: number): ChatHeaderData => {
         const data = await response.json();
         setHeaderData({
           name: data.name,
+		  is_connected: data.is_connected,
           profileImage: data.profileImage,
         });
       } catch (error) {

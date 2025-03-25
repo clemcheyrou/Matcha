@@ -1,3 +1,4 @@
+import { formatNotification } from '../controllers/notificationController.js';
 import { users } from '../index.js';
 import { createNotification } from '../models/notificationModel.js';
 import { getUserById } from '../models/userModel.js';
@@ -19,7 +20,7 @@ export const viewHandler = (socket) => {
 		const name = user.name;
 		
 		await createNotification(viewedUserId, 'view', userId, `${name} see your profile!`);
-		socket.to(viewedUserSocketId).emit('notification', `${name} see your profile`)
+		socket.to(viewedUserSocketId).emit('notification', formatNotification(`${name} see your profile`, userId, 'view'))
 	}
 	)
 }

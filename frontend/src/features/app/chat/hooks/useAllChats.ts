@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import socket from '../../../../service/socket';
+import { useEffect, useState } from "react";
+import socket from "../../../../service/socket";
 
 type Chat = {
 	id: number;
@@ -7,30 +7,50 @@ type Chat = {
 	user_id_1: number;
 	user_id_2: number;
 	photo: string;
-  last_message: string;
-  last_message_created_at: string;
-  last_message_is_read: boolean
-}
+	last_message: string;
+	last_message_created_at: string;
+	last_message_is_read: boolean;
+};
 export const useChats = () => {
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [error, setError] = useState(null);
+	const [chats, setChats] = useState<Chat[]>([]);
+	const [error, setError] = useState(null);
 
-  useEffect(() => {
-    socket.emit('getChatsRequest');
+	useEffect(() => {
+		socket.emit("getChatsRequest");
 
-    socket.on('chatsFetched', (chats) => {
-      setChats(chats);
-    });
+		socket.on("chatsFetched", (chats) => {
+			setChats(chats);
+		});
 
-    socket.on('error', (errorData) => {
-      setError(errorData.message);
-    });
+		socket.on("error", (errorData) => {
+			setError(errorData.message);
+		});
 
-    return () => {
-      socket.off('chatsFetched');
-      socket.off('error');
-    };
-  }, []);
+		socket.on("receiveMessage", (newMessage) => {
+			setChats((prevChats) => {
+				return prevChats.map((chat) => {
+					if (chat.id === newMessage.conversation_id) {
+						const lastMessageText = newMessage.audio_path 
+							? 'A voice message has been sent'
+							: newMessage.text;
+	
+						return {
+							...chat,
+							last_message: lastMessageText,
+							last_message_created_at: newMessage.created_at,
+						};
+					}
+					return chat;
+				});
+			});
+		});
 
-  return { chats, error };
+		return () => {
+			socket.off("chatsFetched");
+			socket.off("error");
+			socket.off("receiveMessage");
+		};
+	}, []);
+
+	return { chats, error };
 };
