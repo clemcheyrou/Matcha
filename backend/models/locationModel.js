@@ -1,23 +1,31 @@
 import pool from "../utils/db.js";
 
-// export const updateLocation = async (userId, lat, lng) => {
-//     const query = `
-//       UPDATE locations
-//       SET lat = $1, lng = $2
-//       WHERE user_id = $3
-//       RETURNING id, lat, lng, created_at
-//     `
-//     const values = [userId, lat, lng];
-
-//     const { rows } = await pool.query(query, values);
-//     const updateUserQuery = `
-//         UPDATE users
-//         SET location = true
-//         WHERE id = $1`;
-//     await pool.query(updateUserQuery, [userId]);
-
-//     return rows[0];
-// };
+export const updateLocation = async (userId, lat, lng) => {
+	const checkLocationQuery = `
+	  SELECT id FROM locations WHERE user_id = $1
+	`;
+	
+	const { rows } = await pool.query(checkLocationQuery, [userId]);
+  
+	if (rows.length > 0) {
+	  const updateLocationQuery = `
+		UPDATE locations
+		SET lat = $1, lng = $2
+		WHERE user_id = $3
+		RETURNING id, user_id, lat, lng, created_at
+	  `;
+	  const { rows: updatedRows } = await pool.query(updateLocationQuery, [lat, lng, userId]);
+	  return updatedRows[0];
+	} else {
+	  const insertLocationQuery = `
+		INSERT INTO locations (user_id, lat, lng)
+		VALUES ($1, $2, $3)
+		RETURNING id, user_id, lat, lng, created_at
+	  `;
+	  const { rows: insertedRows } = await pool.query(insertLocationQuery, [userId, lat, lng]);
+	  return insertedRows[0];
+	}
+};  
 
 export const createLocation = async (userId, lat, lng) => {
   const query = `

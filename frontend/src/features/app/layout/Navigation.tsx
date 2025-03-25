@@ -25,7 +25,7 @@ export const Navigation: React.FC = () => {
 
   return (
     <div>
-	  <div className='bg-bg shadow-md p-4 flex justify-around rounded-lg'>
+	  <div className='bg-bg shadow-md p-4 flex justify-around'>
 	  <button
           className={getButtonClass('home')}
           onClick={() => handleNavigation('home', '/home')}

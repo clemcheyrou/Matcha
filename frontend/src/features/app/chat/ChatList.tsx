@@ -18,7 +18,7 @@ export const ChatList: React.FC = () => {
   return (
 	<div className="w-full rounded-md py-4">
 	  {chats.length === 0 ? (
-	    <div className="text-center text-white py-4">No chats at this time</div>
+	    <div className="text-white py-4">No chats at this time</div>
 	  ) : (
 	    chats.map((chat) => (
 	      <Link

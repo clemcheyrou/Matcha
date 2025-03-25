@@ -1,7 +1,6 @@
 import express from 'express';
 import { getProfile, getAllUsersController, getPhotos, deletePhoto, addGender, saveGenderBio, saveOrientation, saveInterests, getUserProfile, updateUserProfileController, deleteUserController } from '../controllers/userController.js';
 import { check } from 'express-validator';
-import pool from '../utils/db.js';
 
 const router = express.Router();
 
@@ -25,24 +24,5 @@ router.patch('/profile', [
     check('interests').optional().isArray(),
     check('profilePicture').optional().isString(),
 ], updateUserProfileController);
-
-//router.get('/likes', async (req, res) => {
-//	try {
-//	  const result = await pool.query(
-//		`SELECT l2.user_id AS liked_by_user, l2.liked_user_id AS liked_user, l2.is_dislike
-//		 FROM likes l2
-//		 WHERE l2.is_dislike = FALSE`
-//	  );
-  
-//	  if (result.rows.length > 0) {
-//		res.status(200).json(result.rows);
-//	  } else {
-//		res.status(404).json({ message: 'Aucun like trouvé.' });
-//	  }
-//	} catch (err) {
-//	  console.error('Erreur lors de la récupération des likes:', err);
-//	  res.status(500).json({ message: 'Erreur interne du serveur.' });
-//	}
-//  });
 
 export default router;

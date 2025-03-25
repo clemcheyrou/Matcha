@@ -41,7 +41,7 @@ export const Nearby = () => {
 	return (
 		<div className="mt-10 mx-6">
 			<LoadScript
-				googleMapsApiKey={`${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`}
+				googleMapsApiKey={"AIzaSyBbL9pFXd98R2PQPyVV0QhI-xRLijoaEms"}
 			>
 		      <GoogleMap
 		        mapContainerStyle={containerStyle}

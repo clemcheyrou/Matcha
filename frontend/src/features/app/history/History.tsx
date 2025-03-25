@@ -29,12 +29,11 @@ export const History = () => {
     }, []);
 
     if (loading) return <div>Loading...</div>;
-    if (error) return <div>No history at this time</div>;
 
     return (
         <div className="mt-10 mx-6">
-            <h2>Profile Views</h2>
-            {views.length === 0 ? (
+			<h1 className="text-3xl mb-10">Profile Views</h1>
+            {views.length === 0 || error ? (
                 <p>No one has viewed your profile yet.</p>
             ) : (
                 <ul>

@@ -58,7 +58,7 @@ export const Profil = () => {
         <ProfileSkeleton />
       ) : userData ? (
         <div className="rounded-lg overflow-hidden shadow-lg border-none">
-          <div className="relative w-full h-[400px]">
+          <div className="relative w-full h-[300px]">
             <div
               className="absolute top-0 left-0 w-full h-full bg-cover bg-center transition-all duration-500"
               style={{
@@ -96,7 +96,7 @@ export const Profil = () => {
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-2">
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h2 className="text-3xl font-bold font-agbalumo">{userData.name}</h2>

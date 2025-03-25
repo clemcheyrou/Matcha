@@ -25,7 +25,6 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 			socket.emit("like", like);
 		}
 	};
-	console.log(users)
 	if (loading) return <p className="text-center mt-4">Loading...</p>;
 	return (
 		<div className="overflow-y-scroll pt-4">

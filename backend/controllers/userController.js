@@ -1,6 +1,7 @@
 import {
 	createLocation,
 	getAllUsersLocations,
+	updateLocation,
 } from "../models/locationModel.js";
 import {
 	getUserById,
@@ -18,6 +19,7 @@ import {
 	deleteUser,
 } from "../models/userModel.js";
 import { validationResult } from "express-validator";
+import pool from "../utils/db.js";
 
 export const getAllUsersController = async (req, res) => {
 	try {
@@ -254,5 +256,51 @@ export const getAllUserLocationsController = async (req, res) => {
 		res.status(200).json({ data: locations });
 	} catch (error) {
 		res.status(500).json({ error: "error" });
+	}
+};
+
+export const updateLocationForUserController = async (req, res) => {
+	const currentUserId = req.session.userId;
+	const { lat, lng } = req.body;
+  
+	if (!currentUserId || lat === undefined || lng === undefined) {
+	  return res
+		.status(400)
+		.json({ error: "currentUserId, lat, and lng are required" });
+	}
+  
+	try {
+	  const location = await updateLocation(currentUserId, lat, lng);
+  
+	  res.status(200).json({
+		message: "Location updated successfully",
+		location: location,
+	  });
+	} catch (error) {
+	  console.error(error);
+	  res.status(500).json({ error: "An error occurred while updating location" });
+	}
+  };
+  
+export const getUserLocationController = async (req, res) => {
+	try {
+	  const userId = req.session.userId;
+	  if (!userId) return res.status(401).json({ error: "user not authenticated" });
+  
+	  const query = `
+		SELECT lat, lng FROM locations WHERE user_id = $1;
+	  `;
+	  const values = [userId];
+  
+	  const { rows } = await pool.query(query, values);
+	  if (rows.length === 0) {
+		return res.status(404).json({ error: "location not found" });
+	  }
+  
+	  const { lat, lng } = rows[0];
+	  return res.json({ lat, lng });
+	} catch (error) {
+	  console.error(error);
+	  return res.status(500).json({ error: "server error" });
 	}
 };

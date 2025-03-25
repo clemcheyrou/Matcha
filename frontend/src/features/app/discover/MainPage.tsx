@@ -41,10 +41,12 @@ export const MainPage = () => {
               {renderTabs()}
             </ul>
           </div>
-          <div className="flex flex-shrink-0">
-            <FilterUser />
-            <SortUser />
-          </div>
+		  {tab === "discovery" && (
+			  <div className="flex flex-shrink-0 pr-2">
+			    <FilterUser />
+			    <SortUser /> 
+			  </div>
+		)}
         </div>
         <div className="mt-4 z-0">
           <Grid viewMode={tab} />
