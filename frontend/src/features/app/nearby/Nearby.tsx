@@ -41,7 +41,7 @@ export const Nearby = () => {
 	return (
 		<div className="mt-10 mx-6">
 			<LoadScript
-				googleMapsApiKey={"AIzaSyBbL9pFXd98R2PQPyVV0QhI-xRLijoaEms"}
+				googleMapsApiKey={""}
 			>
 		      <GoogleMap
 		        mapContainerStyle={containerStyle}

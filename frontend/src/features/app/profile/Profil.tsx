@@ -53,12 +53,12 @@ export const Profil = () => {
   }
 
   return (
-    <div className="w-full mt-10 px-4 sm:px-0">
+    <div className="w-full mt-10 px-6 sm:px-0">
       {loading ? (
         <ProfileSkeleton />
       ) : userData ? (
         <div className="rounded-lg overflow-hidden shadow-lg border-none">
-          <div className="relative w-full h-[300px]">
+          <div className="relative w-full h-[320px]">
             <div
               className="absolute top-0 left-0 w-full h-full bg-cover bg-center transition-all duration-500"
               style={{
@@ -100,11 +100,11 @@ export const Profil = () => {
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h2 className="text-3xl font-bold font-agbalumo">{userData.name}</h2>
-                <p className="text-lg text-gray-500">{userData.age} ans</p>
+                <p className="text-lg text-gray-500">{userData.age} years</p>
               </div>
               <div className="flex items-center gap-1 bg-pink-100 px-3 py-1 rounded-full">
                 <RiHeart3Fill className="h-4 w-4 text-pink-500 fill-pink-500" />
-                <span className="font-medium text-pink-700">{userData.fame}</span>
+                <span className="font-medium text-pink-700">{userData.fame_count}</span>
               </div>
             </div>
 
