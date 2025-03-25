@@ -25,16 +25,17 @@ export const useMatchedUsers = () => {
 
 	fetchUsers();
 
-	const removeUserFromMatch = (unmatchedUserId: number) => {
-		setUsers((prevUsers) => prevUsers.filter(user => user.id !== unmatchedUserId));
-	  };
+	const removeUserFromMatch = (unmatchedUserId: User) => {
+		setUsers((prevUsers) => prevUsers.filter(user => user.id !== unmatchedUserId.id));
+	};
 
 	const addUserFromMatch = (matchedUser: User) => {
-		setUsers([...users, matchedUser]);
+		setUsers([...users, { ...matchedUser, liked_by_user: true }]);
 	};
 
 	  socket.on('unmatch', removeUserFromMatch);
-	  socket.on('match', addUserFromMatch);
+	   socket.on('match', addUserFromMatch);
+
 	  return () => {
 		socket.off('unmatch', removeUserFromMatch);
 		socket.off('match', addUserFromMatch);

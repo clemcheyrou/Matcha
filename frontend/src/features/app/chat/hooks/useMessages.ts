@@ -73,7 +73,7 @@ export const useMessages = (chatId: number) => {
     return () => {
       socket.off('receiveMessage', handleReceiveMessage);
     };
-  }, [chatId, userId]);
+  }, [chatId, userId, socket]);
 
   const sendMessage = () => {
     const message: Message = {

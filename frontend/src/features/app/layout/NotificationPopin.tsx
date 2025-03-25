@@ -15,14 +15,14 @@ export const NotificationPopin = () => {
             >
                 <IoMdNotificationsOutline size={20} />
                 {notifications.some((n) => !n.is_read) && (
-                    <span className="absolute top-0 right-0 rounded-full bg-red-500 text-white text-xs px-1">
+                    <span className="absolute top-0 right-0 rounded-full bg-red-500 text-white text-xs px-1 z-50">
                         {notifications.filter((n) => !n.is_read).length}
                     </span>
                 )}
             </div>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-[#191919] shadow-lg rounded-lg p-4 z-50 text-black text-normal">
+                <div className="absolute right-0 mt-2 w-64 bg-[#191919] shadow-lg rounded-lg p-4 z-50 text-black text-normal z-50">
                     <h3 className="text-lg font-semibold border-b pb-2 text-white">Notifications</h3>
                     <div className="max-h-60 overflow-y-auto mt-2">
                         {loading && <p className="text-gray-500">Loading...</p>}
@@ -57,7 +57,7 @@ export const NotificationPopin = () => {
 										    </div>
 										</div>
                                     ) : (
-                                        <div>{notif.message}</div>
+                                        <div className="z-50">{notif.message}</div>
                                     )}
                                 </div>
                             ))

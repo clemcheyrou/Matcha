@@ -108,8 +108,8 @@ export const Header = () => {
   return (
     <>
       {showNotification && notification && (
-        <div className="absolute top-12 w-64 right-6 bg-white rounded-lg p-4">
-          <div className="flex justify-between items-center text-black">
+        <div className="absolute top-16 w-64 right-6 bg-bg rounded-lg p-4 z-50 border">
+          <div className="flex justify-between items-center text-white text-xs">
             <span>{notification}</span>
             <span className="cursor-pointer text-xl ml-3" onClick={handleCloseNotification}>
               <RxCross2 />

@@ -18,7 +18,7 @@ export const PrivateRoute = () => {
                 if (response.ok) {
                     const data = await response.json();
                     setIsAuthenticated(data.authenticated);
-					setOnboarding(data.onboarding);
+					setOnboarding(data.onboarding.onboarding);
                 } else {
                     setIsAuthenticated(false);
                 }

@@ -61,7 +61,9 @@ export const likeHandler = (socket) => {
 		await createNotification(likedUserId, 'unlike', userId, `You and ${nameLiked} are now a match`);
 		await createNotification(userId, 'unlike', likedUserId, `You and ${name} are now a match`);
 		socket.emit("notification", `You and ${nameLiked} are now a match`);
-		socket.emit("match", likedUserId);
+		const updatedMatch = await getUserById(likedUserId, userId);
+		console.log(updatedMatch)
+		socket.emit("match", updatedMatch);
 		socket
 			.to(likedUserSocketId)
 			.emit("notification", `You and ${name} are now a match`);
@@ -139,7 +141,8 @@ export const likeHandler = (socket) => {
 
 		if (wasMatched) {
 			socket.to(likedUserSocketId).emit("unmatch", userId);
-			socket.emit("unmatch", likedUserId);
+			const updatedUnMatch = await getUserById(likedUserId, userId);
+			socket.emit("unmatch", updatedUnMatch);
 		}
 	}
 };

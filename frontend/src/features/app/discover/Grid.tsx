@@ -19,12 +19,12 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 
 	const toggleLike = (like: number, user_like: boolean) => {
 		if (user_like) {
-			console.log(user_like)
 			socket.emit("unlike", like);
 		} else {
 			socket.emit("like", like);
 		}
 	};
+	console.log(users)
 	if (loading) return <p className="text-center mt-4">Loading...</p>;
 	return (
 		<div className="overflow-y-scroll pt-4">
@@ -36,7 +36,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 					</div>
 				) : (
 					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-						{users.length > 0 && (
+						{users && users.length > 0 && (
 							users.map((user) => (
 								<div
 									key={user.id}
@@ -59,7 +59,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 
 												<div className="flex items-center gap-x-2">
 													<p className="text-white m-0">
-														{user.name}
+													{user && user.name.length > 8 ? user.name.slice(0, 8) + '...' : user.name}
 													</p>
 													<div
 														className={`h-2 w-2 rounded ${
@@ -76,11 +76,11 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 									<div className="absolute bottom-0 left-2">
 									{user.interests && user.interests.length > 0 && (
 									<div className="mb-2">
-										<div className="flex flex-wrap gap-2 justify-center">
+										<div className="flex flex-wrap gap-1 justify-center">
 											{user.interests.slice(0, 2).map((interest, index) => (
 												<span
 													key={index}
-													className="bg-gray-100 text-xs text-black px-2 py-1 rounded-md text-sm capitalize"
+													className="border text-xs text-white px-2 py-0.5 rounded-md text-sm capitalize"
 												>
 													{interest}
 												</span>
@@ -88,7 +88,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 											
 											{user.interests.length > 2 && (
 												<div
-													className="bg-gray-200 text-xs text-black px-2 py-1 rounded-md text-sm capitalize cursor-pointer"
+													className="border text-xs text-white px-2 py-0.5 rounded-md text-sm capitalize cursor-pointer"
 													title={user.interests.slice(2).join(', ')}
 												>
 													+ {user.interests.length - 2}
@@ -101,7 +101,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 
 	
 									<div
-										className="absolute top-2 right-2 w-6 h-6 text-white cursor-pointer"
+										className="absolute top-2.5 right-2 w-6 h-6 text-white cursor-pointer"
 										onClick={() =>
 											toggleLike(user.id, user.liked_by_user)
 										}
@@ -114,7 +114,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 									</div>
 	
 									{user.liked_by_other && (
-										<div className="flex space-x-1 align-content items-center absolute bottom-3 right-2 h-6 p-1 text-bg bg-gradient-to-r from-[#f59e0b] via-[#fcd34d] to-[#fcd34d] text-xs rounded">
+										<div className="flex space-x-1 align-content items-center absolute bottom-10 right-2 h-6 p-1 text-bg bg-gradient-to-r from-[#f59e0b] via-[#fcd34d] to-[#fcd34d] text-xs rounded">
 											<RiHandHeartFill />
 											<div>Like</div>
 										</div>

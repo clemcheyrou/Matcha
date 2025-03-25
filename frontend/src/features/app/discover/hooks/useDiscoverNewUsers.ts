@@ -80,8 +80,8 @@ export const useDiscoverNewUsers = () => {
 
         fetchUsers();
 
-        const removeUserFromDiscovery = (matchedUserId: number) => {
-            setUsers((prevUsers) => prevUsers.filter((user) => user.id !== matchedUserId));
+        const removeUserFromDiscovery = (matchedUserId: User) => {
+            setUsers((prevUsers) => prevUsers.filter((user) => user.id !== matchedUserId.id));
         };
 
         const addUserFromDiscovery = (unmatchedUser: User) => {

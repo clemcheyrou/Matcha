@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import type { User } from "../type/type"
-import { RiArrowDropLeftLine, RiArrowDropRightLine, RiHeart3Fill } from "react-icons/ri"
+import { RiArrowDropLeftLine, RiArrowDropRightLine } from "react-icons/ri"
 
 export const Profil = () => {
   const [userData, setUserData] = useState<User | null>(null)
@@ -102,9 +102,8 @@ export const Profil = () => {
                 <h2 className="text-3xl font-bold font-agbalumo">{userData.name}</h2>
                 <p className="text-lg text-gray-500">{userData.age} years</p>
               </div>
-              <div className="flex items-center gap-1 bg-pink-100 px-3 py-1 rounded-full">
-                <RiHeart3Fill className="h-4 w-4 text-pink-500 fill-pink-500" />
-                <span className="font-medium text-pink-700">{userData.fame_count}</span>
+              <div className="flex items-center">
+                <span className="font-medium">🔥 {userData.fame_count}</span>
               </div>
             </div>
 

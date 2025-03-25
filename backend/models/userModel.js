@@ -34,7 +34,10 @@ export const getUserById = async (idView, userId) => {
 				cos(radians(loc2.lng) - radians(loc1.lng)) +
 				sin(radians(loc1.lat)) * sin(radians(loc2.lat))
 			) AS distance_km,
-			COALESCE(ARRAY_AGG(DISTINCT ph.url) FILTER (WHERE ph.url IS NOT NULL), '{}') AS photos
+			COALESCE(ARRAY_AGG(DISTINCT ph.url) FILTER (WHERE ph.url IS NOT NULL), '{}') AS photos,
+			CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
+            CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other,
+			(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) AS fame_count
 		FROM 
 			users u
 		LEFT JOIN 
@@ -56,7 +59,7 @@ export const getUserById = async (idView, userId) => {
 		WHERE 
 			u.id = $1
 		GROUP BY 
-			u.id, p.url, loc1.lat, loc1.lng, loc2.lat, loc2.lng, b.user_id, r.user_id;
+			u.id, p.url, loc1.lat, loc1.lng, loc2.lat, loc2.lng, b.user_id, r.user_id, l.user_id, l2.user_id;
 	`;
 
 	const result = await pool.query(query, [idView, userId]);
@@ -287,26 +290,37 @@ export const updateInterests = async (userId, interests) => {
 
 export const findUsersInMatch = async (userId) => {
 	const query = `
-    SELECT 
-      u.id, 
-      u.name, 
-      u.age, 
-      u.gender, 
-      u.bio, 
-      u.interests, 
-      p.url AS profile_photo
-    FROM 
-      users u
-    LEFT JOIN 
-      photos p ON u.profile_photo_id = p.id
-    LEFT JOIN 
-      matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
-    WHERE 
-      (m.user_1_id = $1 OR m.user_2_id = $1) -- Only users that are in a match with the current user
-  `;
+	  SELECT 
+		u.id, 
+		u.name, 
+		u.age, 
+		u.gender, 
+		u.bio, 
+		u.interests, 
+		u.location, 
+		p.url AS profile_photo,
+		COALESCE(fame.fame_count, 0) AS fame_count,  -- Nombre de likes reçus (0 si aucun)
+		EXISTS (
+		  SELECT 1 FROM likes WHERE user_id = $1 AND liked_user_id = u.id
+		) AS liked_by_user  -- Vérifie si l'utilisateur actuel a liké ce profil
+	  FROM 
+		users u
+	  LEFT JOIN 
+		photos p ON u.profile_photo_id = p.id
+	  LEFT JOIN 
+		matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
+	  LEFT JOIN (
+		SELECT liked_user_id, COUNT(*) AS fame_count FROM likes GROUP BY liked_user_id
+	  ) AS fame ON fame.liked_user_id = u.id  -- Sous-requête pour compter les likes reçus
+	  WHERE 
+		(m.user_1_id = $1 OR m.user_2_id = $1) -- Seulement les utilisateurs en match avec l'utilisateur actuel
+	  GROUP BY 
+		u.id, p.url, fame.fame_count;
+	`;
 	const result = await pool.query(query, [userId]);
 	return result.rows;
 };
+  
 
 export const updateUserProfile = async (userId, updates) => {
 	const fieldsToUpdate = [];
