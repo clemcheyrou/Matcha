@@ -4,6 +4,7 @@ import {
 	createEvent,
 	getUserEvents,
 	createUserEvent,
+	getUserInvitations,
 } from "../models/eventModel.js";
 
 export const getAllEventsController = async (req, res) => {
@@ -131,4 +132,23 @@ export const respondToEventInvitationController = async (req, res) => {
 	} catch (err) {
 	  res.status(500).json({ error: "error responding to event invitation."});
 	}
+};
+
+export const getInvitationsController = async (req, res) => {
+    const userId = req.session.userId;
+
+    if (!userId) {
+        return res.status(401).json({ message: "user not authenticated" });
+    }
+
+    try {
+        const invitations = await getUserInvitations(userId);
+        if (invitations.length === 0) {
+			return res.status(200).json({ message: "no invitations" });
+        }
+		
+        return res.status(200).json(invitations);
+    } catch (error) {
+        return res.status(500).json({ message: "server error" });
+    }
 };

@@ -15,7 +15,6 @@ export const usePhotosUploadFB = () => {
     try {
       const formData = new FormData();
       formData.append('imageUrl', highQualityImage);
-      console.log(highQualityImage);
 
       const uploadResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/uploads/upload-image`, {
         method: 'POST',

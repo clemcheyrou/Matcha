@@ -34,8 +34,7 @@ export const useMessages = (chatId: number) => {
         throw new Error('error marking messages as read: ' + res.statusText);
       }
   
-      const data = await res.json();
-	  console.log(data)
+      await res.json();
     } catch (err) {
       console.error('error marking messages as read:', err);
     }
@@ -55,7 +54,6 @@ export const useMessages = (chatId: number) => {
 		  audio_path: msg.audio_path
         }));
         setMessages(formattedMessages);
-		console.log(formattedMessages)
         markMessagesAsRead();
       })
       .catch((err) => console.error('Error fetching messages:', err));
@@ -72,7 +70,7 @@ export const useMessages = (chatId: number) => {
     return () => {
       socket.off('receiveMessage', handleReceiveMessage);
     };
-  }, [chatId]);
+  }, [chatId, markMessagesAsRead]);
 
   const sendMessage = () => {
     const message: Message = {

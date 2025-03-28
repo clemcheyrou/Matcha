@@ -50,7 +50,7 @@ export const useLocationPopup = () => {
             throw new Error("failed to create location");
           }
 
-          const data = await locationResponse.json();
+          await locationResponse.json();
           await dispatch(fetchUser());
           dispatch(setLocation({ lat: latitude, lng: longitude, city: city }));
         } catch (error) {

@@ -30,9 +30,11 @@ export const useMatchedUsers = () => {
 	};
 
 	const addUserFromMatch = (matchedUser: User) => {
-		console.log(matchedUser)
-		setUsers([...users, { ...matchedUser, liked_by_user: true, fame_count: (Number(matchedUser.fame_count) || 0) + 1 }]);
-	};
+		setUsers((prevUsers) => [
+			...prevUsers,
+			{ ...matchedUser, liked_by_user: true, fame_count: (Number(matchedUser.fame_count) || 0) + 1 }
+		  ]);
+		};
 
 	  socket.on('unmatch', removeUserFromMatch);
 	   socket.on('match', addUserFromMatch);

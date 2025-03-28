@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 export const EventPlanning = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [eventTitle, setEventTitle] = useState<string>("");
+  const [selectedTime, setSelectedTime] = useState<string>(""); // Nouvelle variable d'état pour l'heure
   const [message, setMessage] = useState<string>("");
   const { chatId } = useParams<{ chatId: string }>();
 
@@ -29,7 +29,7 @@ export const EventPlanning = () => {
     const startOfMonth = currentMonth.clone().startOf("month");
     const endOfMonth = currentMonth.clone().endOf("month");
 
-    const days: (moment.Moment | null)[] = [];;
+    const days: (moment.Moment | null)[] = [];
     let currentDay = startOfMonth;
 
     while (currentDay.weekday() !== 0) {
@@ -55,11 +55,16 @@ export const EventPlanning = () => {
     }
   };
 
+  const handleTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedTime(event.target.value);
+  };
+
   const handleSubmit = async () => {
-    if (selectedDate) {
+    if (selectedDate && selectedTime) {
       const eventData = {
-        title: eventTitle,
+        title: '',
         date: selectedDate.toISOString(),
+        time: selectedTime,
         chat_id: Number(chatId),
       };
 
@@ -83,18 +88,8 @@ export const EventPlanning = () => {
 
       {showModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
-          <div className="bg-bg p-2 mb-6 rounded-lg shadow-xl max-w-lg w-full">
+          <div className="bg-bg p-4 pt-0 mb-6 rounded-lg shadow-xl max-w-lg w-full">
             <h2 className="text-lg font-semibold mb-4">Organize an Event</h2>
-            <div className="mb-4">
-              <label className="block text-sm mb-2">Event Title</label>
-              <input
-                type="text"
-                value={eventTitle}
-                onChange={(e) => setEventTitle(e.target.value)}
-                className="border border-gray-300 p-2 rounded w-full"
-                placeholder="Enter event title"
-              />
-            </div>
 
             <div className="mb-4">
               <label className="block text-sm mb-2">Select Date</label>
@@ -128,7 +123,7 @@ export const EventPlanning = () => {
                       day && day.isSame(selectedDate, "day")
                         ? "bg-pink text-white rounded-lg"
                         : "cursor-pointer"
-                    } ${day ? "hover:bg-gray-200" : ""}`}
+                    } ${day ? "hover:bg-gray-200 rounded-md" : ""}`}
                     onClick={() => day && handleDateSelect(day)}
                   >
                     {day ? day.date() : ""}
@@ -137,7 +132,15 @@ export const EventPlanning = () => {
               </div>
             </div>
 
-            {message && <p className="text-red-500 text-sm mb-4">{message}</p>}
+            <div className="mb-6">
+              <label className="block text-sm mb-2">Select Time</label>
+              <input
+                type="time"
+                value={selectedTime}
+                onChange={handleTimeChange}
+                className="w-full p-2 border rounded-lg text-black"
+              />
+            </div>
 
             <div className="flex justify-between mt-4">
               <button
