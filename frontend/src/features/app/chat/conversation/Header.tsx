@@ -7,7 +7,7 @@ type HeaderProps = {
   chatId: number;
 }
 
-const lastConnection = (lastConnection: string | null): string => {
+export const lastConnection = (lastConnection: string | null): string => {
 	if (!lastConnection)
 		return '';
     const lastConnectionDate = new Date(lastConnection);
@@ -23,13 +23,13 @@ const lastConnection = (lastConnection: string | null): string => {
     let timeAgo = '';
 
     if (diffInDays > 0) {
-        timeAgo = `${diffInDays} jour(s) ago`;
+        timeAgo = `${diffInDays} day(s) ago`;
     } else if (diffInHours > 0) {
-        timeAgo = `${diffInHours} heure(s) ago`;
+        timeAgo = `${diffInHours} hour(s) ago`;
     } else if (diffInMinutes > 0) {
         timeAgo = `${diffInMinutes} minute(s) ago`;
     } else {
-        timeAgo = `${diffInSeconds} seconde(s) ago`;
+        timeAgo = `${diffInSeconds} second(s) ago`;
     }
 
     return `Last connection : ${timeAgo}`;

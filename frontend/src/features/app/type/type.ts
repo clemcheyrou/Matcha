@@ -16,6 +16,7 @@ export type User = {
 	distance_km: number;
 	photos: string[];
 	fame_count: number;
+	last_connected_at: string;
 };
 
 export type View = {

@@ -5,6 +5,7 @@ import { RiHeart3Fill, RiHeart3Line } from "react-icons/ri";
 import socket from "../../../service/socket.js";
 import { Link } from "react-router-dom";
 import { RiHandHeartFill } from "react-icons/ri";
+import { lastConnection } from "../chat/conversation/Header.tsx";
 
 type GridProps = {
 	viewMode: "discovery" | "matched";
@@ -34,7 +35,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 						to check out discovery 💕
 					</div>
 				) : (
-					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2">
 						{users && users.length > 0 && (
 							users.map((user) => (
 								<div
@@ -67,7 +68,8 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 																: "bg-red-500"
 														}`}
 													/>
-											</div>
+												</div>
+												{user.last_connected_at && !user.is_connected && <p className="mt-0 text-[10px]">{lastConnection(user.last_connected_at)}</p>}
 											</div>
 										</div>
 									</Link>
@@ -114,17 +116,17 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 									}
 									</div>
 	
-									{user.liked_by_other && (
+									{user.liked_by_other && !user.liked_by_user && (
 										<div className="flex space-x-1 align-content items-center absolute bottom-10 right-2 h-6 p-1 text-bg bg-gradient-to-r from-[#f59e0b] via-[#fcd34d] to-[#fcd34d] text-xs rounded">
 											<RiHandHeartFill />
 											<div>Like</div>
 										</div>
 									)}
 	
-									{user.distance_km && (
+									{user.distance_km >= 0 && (
 										<div className="flex space-x-1 align-content items-center absolute top-3 left-2 h-6 p-1 text-white text-xs rounded">
 											<div className="bg-bg p-1 rounded-md">
-												{user.distance_km.toFixed(1)} km
+												{user.distance_km === 0 ? '0' : user.distance_km.toFixed(1)} km
 											</div>
 												<span className="text-xs ml-2">🔥 {user.fame_count}</span>
 										</div>

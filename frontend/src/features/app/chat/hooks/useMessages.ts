@@ -33,10 +33,6 @@ export const useMessages = (chatId: number) => {
         credentials: 'include',
       });
 
-      if (!response.ok) {
-        console.log('no messages')
-      }
-
       await response.json();
     } catch (err) {
       console.error('Error marking messages as read:', err);

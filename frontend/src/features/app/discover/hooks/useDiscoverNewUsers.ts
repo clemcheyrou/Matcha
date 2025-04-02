@@ -104,18 +104,30 @@ export const useDiscoverNewUsers = () => {
             );
         };
 
+        const handleReceivelike = (like: number) => {
+            setUsers((prevUsers) =>
+                prevUsers.map((user) =>
+                    user.id === like ? { ...user, liked_by_other: !user.liked_by_other } : user
+                )
+            );
+        }
+
         socket.on('match', removeUserFromDiscovery);
         socket.on('unmatch', addUserFromDiscovery);
         socket.on('like', handleUserLike);
         socket.on('unlike', handleUserUnlike);
+        socket.on('receiveLike', handleReceivelike);
+        socket.on('receiveUnLike', handleReceivelike);
 
         return () => {
             socket.off('match', removeUserFromDiscovery);
             socket.off('unmatch', addUserFromDiscovery);
             socket.off('like', handleUserLike);
             socket.off('unlike', handleUserUnlike);
+            socket.off('receiveLike', handleReceivelike);
+            socket.off('receiveUnLike', handleReceivelike);
         };
     }, [filters, sortBy, location.isLocationSet]);
-
+    console.log(users)
     return { users, loading, error };
 };

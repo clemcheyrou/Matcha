@@ -55,7 +55,7 @@ export const Profil = () => {
   return (
     <div className="w-full mt-10 px-6 sm:px-0">
       {loading ? (
-        <ProfileSkeleton />
+        <div>loading...</div>
       ) : userData ? (
         <div className="rounded-lg overflow-hidden shadow-lg border-none">
           <div className="relative w-full h-[320px]">
@@ -133,36 +133,3 @@ export const Profil = () => {
     </div>
   )
 }
-
-const ProfileSkeleton = () => (
-  <div className="bg-white rounded-lg overflow-hidden shadow-lg border-none">
-    <div className="relative w-full h-[400px]">
-      <div className="h-full w-full bg-gray-200 animate-pulse" />
-    </div>
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <div className="h-8 w-40 mb-2 bg-gray-200 animate-pulse rounded" />
-          <div className="h-5 w-20 bg-gray-200 animate-pulse rounded" />
-        </div>
-        <div className="h-8 w-16 rounded-full bg-gray-200 animate-pulse" />
-      </div>
-      <div className="mb-6">
-        <div className="h-4 w-24 mb-2 bg-gray-200 animate-pulse rounded" />
-        <div className="flex flex-wrap gap-2">
-          <div className="h-6 w-16 rounded-full bg-gray-200 animate-pulse" />
-          <div className="h-6 w-20 rounded-full bg-gray-200 animate-pulse" />
-          <div className="h-6 w-14 rounded-full bg-gray-200 animate-pulse" />
-        </div>
-      </div>
-      <div className="h-4 w-full mb-2 bg-gray-200 animate-pulse rounded" />
-      <div className="h-4 w-full mb-2 bg-gray-200 animate-pulse rounded" />
-      <div className="h-4 w-3/4 mb-6 bg-gray-200 animate-pulse rounded" />
-      <div className="flex justify-between mt-4">
-        <div className="h-10 w-[48%] bg-gray-200 animate-pulse rounded" />
-        <div className="h-10 w-[48%] bg-gray-200 animate-pulse rounded" />
-      </div>
-    </div>
-  </div>
-)
-

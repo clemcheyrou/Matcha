@@ -31,11 +31,9 @@ export const useChats = () => {
 			setChats((prevChats) => {
 				return prevChats.map((chat) => {
 					if (chat.id === newMessage.chat_id) {
-						console.log(newMessage)
 						const lastMessageText = newMessage.audio_path 
 							? 'A voice message has been sent'
 							: newMessage.text;
-						console.log(lastMessageText)
 						return {
 							...chat,
 							last_message: lastMessageText,

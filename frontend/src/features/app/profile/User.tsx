@@ -6,6 +6,7 @@ import { FiAlertTriangle, FiMessageSquare } from "react-icons/fi";
 import { RiHeart3Fill, RiHeart3Line, RiArrowDropLeftLine, RiArrowDropRightLine } from "react-icons/ri";
 import { MdBlockFlipped } from "react-icons/md";
 import { useCreateChat } from "../chat/hooks/useCreateChat.ts";
+import { lastConnection } from "../chat/conversation/Header.tsx";
 
 export const UserProfile = () => {
 	const { userId } = useParams();
@@ -121,11 +122,28 @@ export const UserProfile = () => {
 					<div className="p-2">
 						<div className="flex justify-between items-center mb-4">
 							<div>
-								<h2 className="text-3xl font-bold font-agbalumo">{userData.name}</h2>
+								<div className="flex justif-content items-center">
+									<h2 className="text-3xl font-bold font-agbalumo mt-0 mr-4">{userData.name}</h2>
+									<div
+										className={`h-2 w-2 rounded mr-2 mt-2 ${
+											userData.is_connected
+												? "bg-green-500"
+												: "bg-red-500"
+										}`}
+									/>
+									{userData.last_connected_at && !userData.is_connected && <p className="mt-2 text-[12px]">{lastConnection(userData.last_connected_at)}</p>}
+								</div>
 								<p className="text-lg text-gray-500">{userData.age} years</p>
 							</div>
-							<div className="flex items-center gap-1 bg-pink-100 px-3 py-1 rounded-full">
-								<span className="font-medium text-pink-700">🔥 {userData.fame_count}</span>
+							<div className="flex">
+								{userData.distance_km && userData.distance_km >= 0 &&
+									<div className="bg-bg p-1 rounded-md">
+										{userData.distance_km === 0 ? '0' : userData.distance_km.toFixed(1)} km
+									</div>
+								}
+								<div className="flex items-center gap-1 px-3 py-1 rounded-full">
+									<span className="font-medium text-pink-700">🔥 {userData.fame_count}</span>
+								</div>
 							</div>
 						</div>
 
@@ -166,7 +184,7 @@ export const UserProfile = () => {
 								</div>
 							</div>
 
-							<button onClick={toggleReport} className="text-xs flex items-center gap-2 p-2 rounded cursor-pointer">
+							<button onClick={toggleReport} className="text-xs flex items-center gap-2 border p-2 rounded cursor-pointer">
 								<FiAlertTriangle size={20} />
 								<span>{userData.reported_by_user ? "Undo Report" : "Report fake profile"}</span>
 							</button>
