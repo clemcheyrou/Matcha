@@ -29,7 +29,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 		<div className="overflow-y-scroll pt-4">
 			<div className="overflow-y-scroll pt-4 mx-1">
 				{error ? (
-					<div className="text-center text-red-500">
+					<div className="text-center">
 						You're too beautiful to be left alone, so don't wait any longer
 						to check out discovery 💕
 					</div>
@@ -58,7 +58,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 
 												<div className="flex items-center gap-x-2">
 													<p className="text-white m-0">
-													{user && user.name.length > 8 ? user.name.slice(0, 8) + '...' : user.name}
+													{user.name && user.name.length > 8 ? user.name.slice(0, 8) + '...' : user.name}
 													</p>
 													<div
 														className={`h-2 w-2 rounded ${
@@ -105,11 +105,13 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 											toggleLike(user.id, user.liked_by_user)
 										}
 									>
-										{user.liked_by_user ? (
+									{user.profile_photo &&
+										user.liked_by_user ? (
 											<RiHeart3Fill className="w-full h-full" />
 										) : (
 											<RiHeart3Line className="w-full h-full" />
-										)}
+										)
+									}
 									</div>
 	
 									{user.liked_by_other && (

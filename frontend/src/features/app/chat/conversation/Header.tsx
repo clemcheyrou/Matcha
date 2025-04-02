@@ -7,8 +7,37 @@ type HeaderProps = {
   chatId: number;
 }
 
+const lastConnection = (lastConnection: string | null): string => {
+	if (!lastConnection)
+		return '';
+    const lastConnectionDate = new Date(lastConnection);
+    const currentDate = new Date();
+
+    const diffInMs = currentDate.getTime() - lastConnectionDate.getTime();
+
+    const diffInSeconds = Math.floor(diffInMs / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    let timeAgo = '';
+
+    if (diffInDays > 0) {
+        timeAgo = `${diffInDays} jour(s) ago`;
+    } else if (diffInHours > 0) {
+        timeAgo = `${diffInHours} heure(s) ago`;
+    } else if (diffInMinutes > 0) {
+        timeAgo = `${diffInMinutes} minute(s) ago`;
+    } else {
+        timeAgo = `${diffInSeconds} seconde(s) ago`;
+    }
+
+    return `Last connection : ${timeAgo}`;
+}
+
+
 export const Header: React.FC<HeaderProps> = ({ chatId }) => {
-	const { name, is_connected, profileImage } = useHeaderChat(chatId);
+	const { name, is_connected, last_connected_at, profileImage } = useHeaderChat(chatId);
 
 	return (
 	<div className="flex items-center p-4 align-content">
@@ -20,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({ chatId }) => {
 		/>
 		<div className='ml-4'>
 			<h2 className="mt-0 text-lg font-semibold opacity-100">{name}</h2>
-			<p className="mt-0 text-xs font-semibold opacity-60">{is_connected ? 'online' : 'offline'} </p>
+			<p className="mt-0 text-xs font-semibold opacity-60">{is_connected ? 'online' : lastConnection(last_connected_at)} </p>
 		</div>
 	</div>
   );

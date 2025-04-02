@@ -115,7 +115,7 @@ export const useDiscoverNewUsers = () => {
             socket.off('like', handleUserLike);
             socket.off('unlike', handleUserUnlike);
         };
-    }, [filters, sortBy, location.isLocationSet, socket]);
+    }, [filters, sortBy, location.isLocationSet]);
 
     return { users, loading, error };
 };

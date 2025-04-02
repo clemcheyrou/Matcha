@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import socket from '../../../../service/socket';
+import { AppDispatch } from '../../../../store/store';
+import { fetchUser } from '../../../../store/slice/authSlice.ts';
 
 interface Message {
   id: number;
@@ -19,31 +21,34 @@ export const useMessages = (chatId: number) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const [, setNewAudio] = useState<string>('');
+	const dispatch = useDispatch<AppDispatch>();
 
   const user = useSelector((state: any) => state.auth.user);
   const userId: number = user?.id;
 
   const markMessagesAsRead = async () => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/chat/${chatId}/messages/mark-read`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/chat/${chatId}/messages/mark-read`, {
         method: 'POST',
         credentials: 'include',
       });
-  
-      if (!res.ok) {
-        throw new Error('error marking messages as read: ' + res.statusText);
+
+      if (!response.ok) {
+        console.log('no messages')
       }
-  
-      await res.json();
+
+      await response.json();
     } catch (err) {
-      console.error('error marking messages as read:', err);
+      console.error('Error marking messages as read:', err);
     }
   };
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/chat/${chatId}/messages`, { credentials: 'include' })
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchMessages = async () => {
+      await dispatch(fetchUser());
+      try {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/chat/${chatId}/messages`, { credentials: 'include' });
+        const data = await res.json();
         const formattedMessages = data.map((msg: Message) => ({
           id: msg.id,
           text: msg.message,
@@ -51,12 +56,16 @@ export const useMessages = (chatId: number) => {
           isSender: msg.author_id === userId,
           author_id: msg.author_id,
           created_at: msg.created_at,
-		  audio_path: msg.audio_path
+          audio_path: msg.audio_path,
         }));
         setMessages(formattedMessages);
         markMessagesAsRead();
-      })
-      .catch((err) => console.error('Error fetching messages:', err));
+      } catch (err) {
+        console.error('error fetching messages:', err);
+      }
+    };
+
+    fetchMessages();
 
     const handleReceiveMessage = (message: Message) => {
       setMessages((prev) => [...prev, message]);
@@ -70,7 +79,8 @@ export const useMessages = (chatId: number) => {
     return () => {
       socket.off('receiveMessage', handleReceiveMessage);
     };
-  }, [chatId, markMessagesAsRead]);
+    // eslint-disable-next-line
+  }, [chatId, userId, dispatch]);
 
   const sendMessage = () => {
     const message: Message = {
@@ -82,7 +92,7 @@ export const useMessages = (chatId: number) => {
       author_id: userId,
       created_at: new Date().toISOString(),
     };
-	
+
     socket.emit('sendMessage', message);
     setMessages((prev) => [...prev, message]);
     setNewMessage('');
@@ -100,8 +110,8 @@ export const useMessages = (chatId: number) => {
     };
 
     setMessages((prev) => [...prev, message]);
-	setNewAudio('');
+    setNewAudio('');
   };
 
-  return { messages, newMessage, setNewMessage, sendMessage, sendAudio, setNewAudio, markMessagesAsRead};
+  return { messages, newMessage, setNewMessage, sendMessage, sendAudio, setNewAudio, markMessagesAsRead };
 };

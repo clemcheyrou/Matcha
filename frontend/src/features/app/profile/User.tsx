@@ -129,7 +129,7 @@ export const UserProfile = () => {
 							</div>
 						</div>
 
-						{userData.interests?.length > 0 && (
+						{userData.interests && userData.interests.length > 0 && (
 							<div className="mb-6">
 								<h3 className="text-sm font-medium text-gray-500 mb-2">Interest</h3>
 								<div className="flex flex-wrap gap-2">
@@ -147,10 +147,11 @@ export const UserProfile = () => {
 						<div className="flex justify-between items-center w-full mt-6">
 							<div className="flex gap-6">
 								<div onClick={toggleLike} className="cursor-pointer">
-									{userData.liked_by_user ? (
-										<RiHeart3Fill className="text-red-500" size={32} />
-									) : (
-										<RiHeart3Line size={32} />
+									{userData.profile_photo &&
+										userData.liked_by_user ? (
+											<RiHeart3Fill className="text-red-500" size={32} />
+										) : (
+											<RiHeart3Line size={32} />
 									)}
 								</div>
 

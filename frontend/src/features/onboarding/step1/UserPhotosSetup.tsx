@@ -58,7 +58,7 @@ export const UserPhotosSetup = () => {
   const isNextDisabled = photos.length < 5;
 
   return (
-    <div className="mb-16 h-screen w-screen text-white px-6 md:px-28 lg:px-96 pb-16">
+    <div className="mb-16 h-screen w-screen text-white px-6 md:px-28 lg:px-80 pb-16">
       <div className="mt-12">
         <BreadcrumbSteps
           steps={["Images", "Identity", "Orientation", "Interest"]}

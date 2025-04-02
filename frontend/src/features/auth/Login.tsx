@@ -13,6 +13,7 @@ import { useSocialAuth } from "./hooks/useSocialAuth.ts";
 
 export const Login = () => {
 	const [showPassword, setShowPassword] = useState(false);
+	const [error, setError] = useState(false);
 	const { formData, handleChange } = useForm();
 	const { login } = useAuth();
 	const navigate = useNavigate();
@@ -27,7 +28,7 @@ export const Login = () => {
 			await dispatch(fetchUser());
 			navigate("/home");
 		} else {
-			console.error(result.message);
+			setError(result.message);
 		}
 	};
 
@@ -85,10 +86,10 @@ export const Login = () => {
 							)}
 						</div>
 					</div>
-
+					{error && <p className="text-red-500">{error}</p>}
 					<button
 						type="submit"
-						className="w-full text-center space-x-4 font-agbalumo text-black rounded-md px-4 py-2 mt-6 bg-pink text-white cursor-pointer hover:bg-white hover:text-pink-500"
+						className="w-full text-center space-x-4 font-agbalumo text-black rounded-md px-4 py-2 mt-6 bg-pink text-white cursor-pointer hover:bg-white hover:text-pink"
 						>
 						CONNECT
 					</button>

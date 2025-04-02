@@ -18,8 +18,9 @@ const interestsList = [
 	"Art",
 ];
 
-const Tag = ({ interest, isSelected, toggleInterest }) => (
+const Tag = ({ key, interest, isSelected, toggleInterest }) => (
 	<div
+		key={interest}
 		onClick={() => toggleInterest(interest)}
 		className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-all
       ${
@@ -39,10 +40,10 @@ export const UserInterestSelector = () => {
 	const navigate = useNavigate();
 	const dispatch = useDispatch<AppDispatch>();
 
-	const toggleInterest = (interest) => {
-		setSelectedInterests((prev) =>
+	const toggleInterest = (interest: any) => {
+		setSelectedInterests((prev: any[]) =>
 			prev.includes(interest)
-				? prev.filter((i) => i !== interest)
+				? prev.filter((i: any) => i !== interest)
 				: [...prev, interest]
 		);
 	};

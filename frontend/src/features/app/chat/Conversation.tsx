@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useMessages } from './hooks/useMessages.ts';
 import  { MessageInput } from './conversation/MessageInput.tsx';
@@ -13,16 +13,9 @@ export const Conversation: React.FC = () => {
     newMessage,
     setNewMessage,
     sendMessage,
-	sendAudio,
-	setNewAudio,
-	markMessagesAsRead
+    sendAudio,
+    setNewAudio,
   } = useMessages(Number(chatId));
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      markMessagesAsRead();
-    }
-  }, [messages]);
 
   return (
     <div className="flex flex-col h-full">

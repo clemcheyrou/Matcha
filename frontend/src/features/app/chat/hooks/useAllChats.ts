@@ -6,6 +6,7 @@ type Chat = {
 	name: string;
 	user_id_1: number;
 	user_id_2: number;
+	audio_path: string;
 	photo: string;
 	last_message: string;
 	last_message_created_at: string;
@@ -29,11 +30,12 @@ export const useChats = () => {
 		socket.on("receiveMessage", (newMessage) => {
 			setChats((prevChats) => {
 				return prevChats.map((chat) => {
-					if (chat.id === newMessage.conversation_id) {
+					if (chat.id === newMessage.chat_id) {
+						console.log(newMessage)
 						const lastMessageText = newMessage.audio_path 
 							? 'A voice message has been sent'
 							: newMessage.text;
-	
+						console.log(lastMessageText)
 						return {
 							...chat,
 							last_message: lastMessageText,
