@@ -50,7 +50,6 @@ export const createUserEvent = async (user_id, event_id, invitation_status) => {
 		event_id,
 		invitation_status,
 	]);
-	console.log("Invitation créée :", result.rows[0]);
 	return result.rows[0];
 };
 

@@ -69,7 +69,9 @@ export const getChatInfo = async (chatId) => {
 		p1.url AS user_1_profile_photo,
 		p2.url AS user_2_profile_photo,
 		u1.is_connected AS user_1_connected,
-		u2.is_connected AS user_2_connected
+		u2.is_connected AS user_2_connected,
+		u1.last_connected_at AS user_1_last_connected,
+        u2.last_connected_at AS user_2_last_connected
 	  FROM chat
 	  LEFT JOIN users u1 ON chat.user_1_id = u1.id
 	  LEFT JOIN users u2 ON chat.user_2_id = u2.id

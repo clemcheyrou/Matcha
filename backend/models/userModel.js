@@ -78,6 +78,17 @@ export const findUsersByPreference = async (userId, filters) => {
         "b.blocked_user_id IS NULL"
     ];
 
+	const isPhotoQuery = `
+		SELECT 1
+		FROM photos p
+		JOIN users u ON u.profile_photo_id = p.id
+		WHERE u.id = $1
+	`;
+	const photoCheckResult = await pool.query(isPhotoQuery, [userId]);
+
+	if (photoCheckResult.rows.length === 0)
+		return [];
+
     if (filters.ageRange && filters.ageRange.length === 2) {
         conditions.push("u.age BETWEEN $3 AND $4");
         values.push(filters.ageRange[0], filters.ageRange[1]);
@@ -94,7 +105,7 @@ export const findUsersByPreference = async (userId, filters) => {
     }
 
     if (filters.tags && filters.tags.length > 0) {
-        const tagIndexStart = values.length + 1;  // Début des paramètres pour les tags
+        const tagIndexStart = values.length + 1;
         const tagConditions = `u.interests && ARRAY[${filters.tags.map((tag, index) => `$${tagIndexStart + index}`).join(", ")}]`;
         conditions.push(tagConditions);
         values.push(...filters.tags);
@@ -109,6 +120,7 @@ export const findUsersByPreference = async (userId, filters) => {
             u.bio, 
             u.interests,
             u.is_connected,
+			u.last_connected_at,
             p.url AS profile_photo,
             6371 * acos(
                 cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
@@ -297,12 +309,13 @@ export const findUsersInMatch = async (userId) => {
 		u.gender, 
 		u.bio, 
 		u.interests, 
-		u.location, 
+		u.location,
+		u.is_connected,
 		p.url AS profile_photo,
-		COALESCE(fame.fame_count, 0) AS fame_count,  -- Nombre de likes reçus (0 si aucun)
+		COALESCE(fame.fame_count, 0) AS fame_count,
 		EXISTS (
 		  SELECT 1 FROM likes WHERE user_id = $1 AND liked_user_id = u.id
-		) AS liked_by_user  -- Vérifie si l'utilisateur actuel a liké ce profil
+		) AS liked_by_user
 	  FROM 
 		users u
 	  LEFT JOIN 
@@ -311,9 +324,11 @@ export const findUsersInMatch = async (userId) => {
 		matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
 	  LEFT JOIN (
 		SELECT liked_user_id, COUNT(*) AS fame_count FROM likes GROUP BY liked_user_id
-	  ) AS fame ON fame.liked_user_id = u.id  -- Sous-requête pour compter les likes reçus
+	  ) AS fame ON fame.liked_user_id = u.id
+	  LEFT JOIN blocks b ON b.user_id = $1 AND b.blocked_user_id = u.id 
 	  WHERE 
-		(m.user_1_id = $1 OR m.user_2_id = $1) -- Seulement les utilisateurs en match avec l'utilisateur actuel
+		(m.user_1_id = $1 OR m.user_2_id = $1)
+		AND b.blocked_user_id IS NULL
 	  GROUP BY 
 		u.id, p.url, fame.fame_count;
 	`;

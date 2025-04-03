@@ -64,7 +64,12 @@ export const getChatHeaderController = async (req, res) => {
 			currentUserId === chatInfo.user_1_id
 				? chatInfo.user_2_connected
 				: chatInfo.user_1_connected;
-		return res.json({ name: userName, profileImage: userImage, is_connected: userConnected});
+		const userLastConnection =
+			currentUserId === chatInfo.user_1_id
+				? chatInfo.user_2_last_connected
+				: chatInfo.user_1_last_connected;
+		
+		return res.json({ name: userName, profileImage: userImage, is_connected: userConnected, last_connected_at: userLastConnection});
 	} catch (error) {
 		res.status(500).json({ error: "error to get chat info" });
 	}
@@ -76,12 +81,8 @@ export const markMessagesAsReadController = async (req, res) => {
 
 	try {
 		const updatedCount = await markMessagesAsRead(chatId, currentUserId);
-		if (updatedCount === 0) {
-			return res
-				.status(404)
-				.json({ message: "no unread messages for this chat" });
-		}
-
+		if (updatedCount === 0)
+			return res.status(200).json({ message: "No unread messages for this chat" });
 		res.status(200).json({ message: "messages marked as read" });
 	} catch (error) {
 		res.status(500).json({ error: "failed to mark messages as read" });

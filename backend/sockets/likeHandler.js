@@ -1,5 +1,6 @@
 import { formatNotification } from "../controllers/notificationController.js";
 import { users } from "../index.js";
+import { hasBlocked } from "../models/blockModel.js";
 import { createNotification } from "../models/notificationModel.js";
 import { getUserById } from "../models/userModel.js";
 import pool from "../utils/db.js";
@@ -9,7 +10,7 @@ export const likeHandler = (socket) => {
 		const userId = socket.request.session.userId;
 
 		if (!userId) {
-			console.log("Not authenticated");
+			console.log("not authenticated");
 			return;
 		}
 		const client = await pool.connect();
@@ -76,21 +77,18 @@ export const likeHandler = (socket) => {
 		const user = await getUserById(userId);
 		const name = user.name;
 
-		await createNotification(
-			likedUserId,
-			"like",
-			userId,
-			`${name} likes you!`
-		);
-		socket.to(likedUserSocketId).emit("notification", formatNotification(`${name} likes you!`, userId, 'like'));
+		const likedUserBlocked = await hasBlocked(likedUserId, userId);
+		if (!likedUserBlocked) {
+			await createNotification(likedUserId, "like", userId,`${name} likes you!`);
+			socket.to(likedUserSocketId).emit("notification", formatNotification(`${name} likes you!`, userId, 'like'));
+			socket.to(likedUserSocketId).emit("receiveLike", userId);
+		}
 	}
 
 	socket.on("unlike", async (likedUserId) => {
 		const userId = socket.request.session.userId;
 
 		if (!userId) return console.log("not authenticated");
-
-		console.log(`${userId} unliked ${likedUserId}`);
 
 		const client = await pool.connect();
 
@@ -101,6 +99,14 @@ export const likeHandler = (socket) => {
 				`DELETE FROM likes WHERE user_id = $1 AND liked_user_id = $2`,
 				[userId, likedUserId]
 			);
+
+			const deleteQuery = `
+				DELETE FROM chat
+				WHERE (user_1_id = $1 AND user_2_id = $2)
+				OR (user_1_id = $2 AND user_2_id = $1);
+			`;
+			const deleteValues = [userId, likedUserId];
+			await client.query(deleteQuery, deleteValues);
 
 			const { rowCount } = await client.query(
 				`DELETE FROM matches 
@@ -128,8 +134,13 @@ export const likeHandler = (socket) => {
 		const likedUserSocketId = users[likedUserId];
 		const user = await getUserById(userId, likedUserId);
 		const name = user.name;
-		await createNotification(likedUserId, "unlike" ,userId,`${name} unlikes you!`);
-		socket.to(likedUserSocketId).emit('notification', formatNotification(`${name} unlikes you!`, userId, 'like'));
+		const likedUserBlocked = await hasBlocked(likedUserId, userId);
+
+		if (!likedUserBlocked) {
+			await createNotification(likedUserId, "unlike" ,userId,`${name} unlikes you!`);
+			socket.to(likedUserSocketId).emit('notification', formatNotification(`${name} unlikes you!`, userId, 'like'));
+			socket.to(likedUserSocketId).emit("receiveUnLike", userId);
+		}
 
 		if (wasMatched) {
 			const updatedUnMatch = await getUserById(likedUserId, userId);

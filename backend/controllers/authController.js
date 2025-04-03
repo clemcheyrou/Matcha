@@ -3,6 +3,8 @@ import { getUserByEmail, createUser, updateUserVerification } from "../models/us
 import { generateToken, verifyToken } from "../utils/token.js";
 import { sendConfirmationEmail, sendResetPasswordEmail } from "../utils/emailSender.js";
 import { updateUserPassword } from "../models/authModel.js";
+import pool from "../utils/db.js";
+import { io, users } from "../index.js";
 
 export const register = async (req, res) => {
 	const { name, email, password } = req.body;
@@ -68,10 +70,12 @@ export const login = async (req, res) => {
 	}
 };
 
-export const logout = (req, res) => {
-	req.session.destroy((err) => {
-		if (err) return res.status(500).json({ message: "error while disconnecting" });
+export const logout = async (req, res) => {
+	const userId = req.session.userId;
 
+	req.session.destroy(async (err) => {
+		if (err) return res.status(500).json({ message: "error while disconnecting" });
+		await pool.query("UPDATE users SET is_connected = FALSE, last_connected_at = CURRENT_TIMESTAMP WHERE id = $1", [userId]);
 		res.clearCookie("connect.sid");
 		res.status(200).json({ message: "Successful disconnection" });
 	});

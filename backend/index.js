@@ -31,7 +31,7 @@ const app = express();
 const port = process.env.PORT || 5001;
 
 const server = http.createServer(app);
-const io = new Server(server, {
+export const io = new Server(server, {
 	cors: {
 		origin: "http://localhost:3000",
 		methods: ["GET", "POST"],
@@ -73,7 +73,7 @@ io.on("connection", async (socket) => {
 
 	if (userId) {
 		users[userId] = socket.id;
-		await pool.query("UPDATE users SET is_connected = TRUE WHERE id = $1", [userId]);
+		await pool.query("UPDATE users SET is_connected = TRUE, last_connected_at = CURRENT_TIMESTAMP WHERE id = $1", [userId]);
 	} else {
 		socket.disconnect(true);
 		return;
@@ -89,11 +89,11 @@ io.on("connection", async (socket) => {
 
 	socket.on("disconnect", async () => {
 		delete users[userId];
-		await pool.query("UPDATE users SET is_connected = FALSE WHERE id = $1", [userId]);
+		await pool.query("UPDATE users SET is_connected = FALSE, last_connected_at = CURRENT_TIMESTAMP WHERE id = $1", [userId]);
 	});
 	setTimeout(async () => {
 		if (!users[userId]) {
-			await pool.query("UPDATE users SET is_connected = FALSE WHERE id = $1",[userId]);
+			await pool.query("UPDATE users SET is_connected = FALSE, last_connected_at = CURRENT_TIMESTAMP WHERE id = $1",[userId]);
 		}
 	}, 5000);
 });

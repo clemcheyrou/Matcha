@@ -12,7 +12,6 @@ export const viewHandler = (socket) => {
             return;
 		try {
             const profileView = await logProfileView(userId, viewedUserId);
-			console.error("id profile view:", viewedUserId);
         } catch (error) {
 			console.error("error profile view:", error);
         }

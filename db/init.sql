@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
+    -- username VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(100),
     age INT,
@@ -10,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     onboarding BOOLEAN DEFAULT FALSE,
     is_verified BOOLEAN DEFAULT FALSE,
     is_connected BOOLEAN DEFAULT FALSE,
+    last_connected_at TIMESTAMP,
     auth_type VARCHAR(20) DEFAULT 'local',
     oauth_token TEXT,
     orientation INTEGER,

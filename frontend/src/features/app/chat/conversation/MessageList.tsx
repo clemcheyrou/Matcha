@@ -11,11 +11,11 @@ type Message = {
 	audio_path?: string;
 };
 
-type MessageListProps = {
+type MessageList = {
 	messages: Message[];
 };
 
-export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
+export const MessageList: React.FC<MessageList> = ({ messages }) => {
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {

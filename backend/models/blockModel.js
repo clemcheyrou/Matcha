@@ -1,6 +1,29 @@
 import pool from "../utils/db.js";
 
 export const blockUser = async (userblockedId, userId) => {
+	const deleteQuery = `
+		DELETE FROM chat
+		WHERE (user_1_id = $1 AND user_2_id = $2)
+		OR (user_1_id = $2 AND user_2_id = $1);
+	`;
+	const deleteValues = [userId, userblockedId];
+	await pool.query(deleteQuery, deleteValues);
+
+	const deleteLikeQuery = 
+	`DELETE FROM likes
+	WHERE (user_id = $1 AND liked_user_id = $2) 
+	OR (user_id = $2 AND liked_user_id = $1);`;
+	const deleteLikeValues = [userId, userblockedId];
+	await pool.query(deleteLikeQuery, deleteLikeValues);
+
+	const deleteMatchQuery = `
+	DELETE FROM matches
+	WHERE (user_1_id = $1 AND user_2_id = $2)
+	OR (user_1_id = $2 AND user_2_id = $1);
+	`;
+	const deleteMatchValues = [userId, userblockedId];
+	await pool.query(deleteMatchQuery, deleteMatchValues);
+
 	const query = `
         INSERT INTO blocks (blocked_user_id, user_id)
         VALUES ($1, $2)
@@ -44,4 +67,17 @@ export const findUserBlocked = async (userId) => {
   `;
 	const result = await pool.query(query, [userId]);
 	return result.rows;
+};
+
+export const hasBlocked = async (userId, targetUserId) => {
+    const query = `
+        SELECT 1
+        FROM blocks
+        WHERE user_id = $1 AND blocked_user_id = $2
+        LIMIT 1;
+    `;
+    const values = [userId, targetUserId];
+    const result = await pool.query(query, values);
+    
+    return result.rowCount > 0;
 };
