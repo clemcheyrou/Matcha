@@ -11,13 +11,17 @@ export const useAuth = () => {
 
 	const register = async (formData: {
 		username: string;
+		firstname: string;
+		lastname: string;
 		email: string;
 		password: string;
 	}) => {
 		try {
 			const response = await dispatch(
 				registerUser({
-					name: formData.username,
+					username: formData.username,
+					firstname: formData.firstname,
+					lastname: formData.lastname, 
 					email: formData.email,
 					password: formData.password,
 				})

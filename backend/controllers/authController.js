@@ -7,17 +7,23 @@ import pool from "../utils/db.js";
 import { io, users } from "../index.js";
 
 export const register = async (req, res) => {
-	const { name, email, password } = req.body;
+	const { lastname, firstname, username, email, password } = req.body;
 
 	try {
-		if (!name || !email || !password)
+		if (!lastname || !firstname || !username || !email || !password)
 			return res.status(400).json({ message: "all fields are required." });
+		// const passwordCheck = isStrongPassword(mot_de_passe);
+		// if (!passwordCheck.valid) {
+		// 	return res.status(400).json({ message: passwordCheck.message });
+		// }
 		const user = await getUserByEmail(email);
 		if (user)
             return res.status(409).json({ message: "email_exists" });
 		const hashedPassword = await bcrypt.hash(password, 10);
 		const userId = await createUser(
-			name,
+			lastname,
+			firstname,
+			username,
 			email,
 			hashedPassword,
 		);
@@ -30,6 +36,26 @@ export const register = async (req, res) => {
 		res.status(500).json({ success: "false", message: "server error" });
 	}
 };
+
+// function isStrongPassword(password) {
+//     if (password.length < 8) {
+//         return { valid: false, message: "Password must contain at least 8 characters." };
+//     }
+//     if (!/[a-z]/.test(password)) {
+//         return { valid: false, message: "The password must contain at least one lowercase letter." };
+//     }
+//     if (!/[A-Z]/.test(password)) {
+//         return { valid: false, message: "The password must contain at least one uppercase letter." };
+//     }
+//     if (!/\d/.test(password)) {
+//         return { valid: false, message: "The password must contain at least one digit." };
+//     }
+//     if (!/[@$!%*?&]/.test(password)) {
+//         return { valid: false, message: "The password must contain at least one special character (@$!%*?&)." };
+//     }
+
+//     return { valid: true };
+// }
 
 export const handleEmailConfirmation = async (req, res) => {
     const { token } = req.query;

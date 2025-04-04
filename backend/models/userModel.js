@@ -210,13 +210,16 @@ export const addUserGender = async (gender, userId) => {
 	}
 };
 
-export const createUser = async (name, email, hashedPassword, age, gender) => {
-	const query =
-		"INSERT INTO users (name, email, password, age, gender) VALUES ($1, $2, $3, $4, $5) RETURNING id";
-	const values = [name, email, hashedPassword, age, gender];
+export const createUser = async (lastname, firstname, username, email, hashedPassword, age, gender) => {
+    const query = `
+        INSERT INTO users (lastname, firstname, username, email, password, age, gender)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
+    `;
+    const values = [lastname, firstname, username, email, hashedPassword, age, gender];
 
-	const result = await pool.query(query, values);
-	return result.rows[0].id;
+    const result = await pool.query(query, values);
+    return result.rows[0].id;
 };
 
 export const deleteUser = async (userId) => {
