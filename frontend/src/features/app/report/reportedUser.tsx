@@ -38,11 +38,11 @@ export const ReportedUsers = () => {
 				<p>No reported users.</p>
 			) : (
 				<ul className="grid grid-cols-3 gap-4">
-					{reportedUsers.map(({ id, name, profile_photo }) => (
+					{reportedUsers.map(({ id, username, profile_photo }) => (
 						<li key={id} className="flex flex-col items-center rounded-lg">
-							<img src={`${process.env.REACT_APP_API_URL}${profile_photo}`} alt={name} className="w-40 h-40 object-cover rounded-md" />
+							<img src={`${process.env.REACT_APP_API_URL}${profile_photo}`} alt={username} className="w-40 h-40 object-cover rounded-md" />
 							<div className="flex items-center justify-between gap-x-6 mt-4">
-								<span className="font-semibold">{name}</span>
+								<span className="font-semibold">{username}</span>
 								<button onClick={() => toggleBlock(id)} className="text-xs px-2 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600">
 									Unreport
 								</button>

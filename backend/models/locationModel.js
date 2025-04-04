@@ -51,7 +51,7 @@ export const getAllUsersLocations = async (userId, genderPreference) => {
   const query = `
     SELECT 
       u.id, 
-      u.name, 
+      u.username, 
       l.lat, 
       l.lng
     FROM 
@@ -66,7 +66,7 @@ export const getAllUsersLocations = async (userId, genderPreference) => {
 
   const peopleLocations = result.rows.map(person => ({
     id: person.id,
-    name: person.name,
+    username: person.username,
     lat: parseFloat(person.lat),
     lng: parseFloat(person.lng),
     isCurrentUser: person.id === userId

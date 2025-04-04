@@ -48,7 +48,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 									>
 										<img
 											src={`${process.env.REACT_APP_API_URL}${user.profile_photo}`}
-											alt={user.name}
+											alt={user.username}
 											className="w-full h-full object-cover rounded-lg"
 										/>
 										<div className="absolute inset-0 bg-black bg-opacity-50 rounded-md">
@@ -59,7 +59,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 
 												<div className="flex items-center gap-x-2">
 													<p className="text-white m-0">
-													{user.name && user.name.length > 8 ? user.name.slice(0, 8) + '...' : user.name}
+													{user.username && user.username.length > 8 ? user.username.slice(0, 8) + '...' : user.username}
 													</p>
 													<div
 														className={`h-2 w-2 rounded ${

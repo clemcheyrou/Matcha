@@ -13,12 +13,14 @@ const TABS = [
 	{ key: "profile" as const, label: "Profile" },
 	{ key: "photos" as const, label: "Photos" },
   ];
-
+//chane name = username
 export const Settings: React.FC = () => {
 	const dispatch = useDispatch<AppDispatch>();
 	const user = useSelector((state: RootState) => state.auth.user);
 
-	const [name, setName] = useState("");
+	const [username, setUsername] = useState("");
+	const [firstname, setFirstname] = useState("");
+	const [lastname, setLastname] = useState("");
 	const [email, setEmail] = useState("");
 	const [gender, setGender] = useState("");
 	const [sexualPreference, setSexualPreference] = useState<
@@ -75,7 +77,9 @@ export const Settings: React.FC = () => {
 
 	useEffect(() => {
 		if (user) {
-			setName(user.name);
+			setUsername(user.username);
+			setFirstname(user.firstname);
+			setLastname(user.lastname);
 			setEmail(user.email);
 			setGender(user.gender || "");
 			setSexualPreference(user.orientation || undefined);
@@ -97,7 +101,9 @@ export const Settings: React.FC = () => {
 					addPhoto(profilePicture)
 				).unwrap();
 				const profileData = {
-					name,
+					username,
+					firstname,
+					lastname,
 					email,
 					gender,
 					sexualPreference,
@@ -109,7 +115,9 @@ export const Settings: React.FC = () => {
 				await dispatch(updateUserProfile(profileData)).unwrap();
 			} else {
 				const profileData = {
-					name,
+					username,
+					firstname,
+					lastname,
 					email,
 					gender,
 					sexualPreference,
@@ -160,9 +168,25 @@ export const Settings: React.FC = () => {
 					<form onSubmit={handleProfileUpdate} className="space-y-4 mt-10">
 						<input
 							type="text"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							placeholder="First Name"
+							value={username}
+							onChange={(e) => setUsername(e.target.value)}
+							placeholder="Username"
+							required
+							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
+						/>
+						<input
+							type="text"
+							value={firstname}
+							onChange={(e) => setFirstname(e.target.value)}
+							placeholder="Firstname"
+							required
+							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
+						/>
+						<input
+							type="text"
+							value={lastname}
+							onChange={(e) => setLastname(e.target.value)}
+							placeholder="Lastname"
 							required
 							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
 						/>

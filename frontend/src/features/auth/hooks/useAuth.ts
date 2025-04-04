@@ -34,13 +34,13 @@ export const useAuth = () => {
 	};
 
 	const login = async (formData: {
-		email: string;
+		username: string;
 		password: string;
 	}) => {
 		try {
 			const response = await dispatch(
 				loginUser({
-					email: formData.email,
+					username: formData.username,
 					password: formData.password,
 				})
 			).unwrap();

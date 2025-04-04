@@ -46,13 +46,6 @@ export const useForm = () => {
         errorMessage = "Invalid email address";
       }
     }
-
-    if (name === "password" && value.length < 8) {
-      errorMessage = "password must be at least 8 characters";
-    }
-    if (name === "confirmPassword" && value !== formData.password) {
-      errorMessage = "passwords do not match";
-    }
     if (name === "username" && value.trim().length === 0) {
       errorMessage = "Username is required";
     }
@@ -61,6 +54,12 @@ export const useForm = () => {
     }
     if (name === "lastname" && value.trim().length === 0) {
       errorMessage = "Lastname is required";
+    }
+    if (name === "password" && value.length < 8) {
+      errorMessage = "password must be at least 8 characters";
+    }
+    if (name === "confirmPassword" && value !== formData.password) {
+      errorMessage = "passwords do not match";
     }
 
     setErrors((prevErrors) => ({

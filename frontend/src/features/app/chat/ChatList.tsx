@@ -31,14 +31,14 @@ export const ChatList: React.FC = () => {
 	          <div className="w-12 h-12 rounded-full overflow-hidden">
 	            <img
 	              src={`${process.env.REACT_APP_API_URL}${chat.photo}`}
-	              alt={chat.name}
+	              alt={chat.username}
 	              className="w-full h-full object-cover"
 	            />
 	          </div>
 
 	          <div className="flex-1">
 	            <div className="flex justify-between items-center mb-2">
-	              <h3 className="text-md font-semibold text-white">{chat.name}</h3>
+	              <h3 className="text-md font-semibold text-white">{chat.username}</h3>
 	              <p className="text-xs mt-0 opacity-60">
 	                {chat.last_message_created_at &&
 	                  formatDate(chat.last_message_created_at)}

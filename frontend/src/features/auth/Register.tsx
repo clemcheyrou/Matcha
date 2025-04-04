@@ -35,7 +35,7 @@ export const Register = () => {
                         method: "GET",
                         credentials: "include",
                     });
-
+					console.log("FRONT : AVANT REPONSE");
                     if (response.ok) {
                         const data = await response.json();
                         if (data.authenticated) {

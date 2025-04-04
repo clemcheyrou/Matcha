@@ -38,11 +38,11 @@ export const BlockedUsers = () => {
 				<p>No blocked users.</p>
 			) : (
 				<ul className="grid grid-cols-3 gap-4">
-					{blockedUsers.map(({ id, name, profile_photo }) => (
+					{blockedUsers.map(({ id, username, profile_photo }) => (
 						<li key={id} className="flex flex-col items-center rounded-lg">
-							<img src={`${process.env.REACT_APP_API_URL}${profile_photo}`} alt={name} className="w-40 h-40 object-cover rounded-md" />
+							<img src={`${process.env.REACT_APP_API_URL}${profile_photo}`} alt={username} className="w-40 h-40 object-cover rounded-md" />
 							<div className="flex items-center justify-between gap-x-6 mt-4">
-								<span className="font-semibold">{name}</span>
+								<span className="font-semibold">{username}</span>
 								<button onClick={() => toggleBlock(id)} className="text-xs px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
 									Unblock
 								</button>

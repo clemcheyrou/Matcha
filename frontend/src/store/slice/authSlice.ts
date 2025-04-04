@@ -22,7 +22,7 @@ export const fetchUser = createAsyncThunk(
 
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async (userData: { email: string; password: string }, { rejectWithValue }) => {
+  async (userData: { username: string; password: string }, { rejectWithValue }) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
         method: "POST",
@@ -44,11 +44,11 @@ export const loginUser = createAsyncThunk(
     }
   }
 );
-
+/////TROUVER MAUVAIS ORDRE DES USERDATA = RECTIFIER
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (
-    userData: { firstname: string; lastname: string; username: string; email: string; password: string },
+    userData: { username: string; firstname: string; lastname: string; email: string; password: string },
     { rejectWithValue }
   ) => {
     try {

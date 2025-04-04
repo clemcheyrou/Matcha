@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 type ChatHeaderData = {
-  name: string;
+  username: string;
   profileImage: string;
   is_connected: boolean;
   last_connected_at: string | null;
@@ -9,7 +9,7 @@ type ChatHeaderData = {
 
 export const useHeaderChat = (chatId: number): ChatHeaderData => {
   const [headerData, setHeaderData] = useState<ChatHeaderData>({
-    name: '',
+    username: '',
 	  is_connected: false,
     profileImage: '',
     last_connected_at: null
@@ -21,7 +21,7 @@ export const useHeaderChat = (chatId: number): ChatHeaderData => {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/chat/${chatId}/header`, {credentials: 'include'});
         const data = await response.json();
         setHeaderData({
-          name: data.name,
+          username: data.username,
 		      is_connected: data.is_connected,
           last_connected_at: data.last_connected_at,
           profileImage: data.profileImage,

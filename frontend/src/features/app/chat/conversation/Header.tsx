@@ -37,7 +37,7 @@ export const lastConnection = (lastConnection: string | null): string => {
 
 
 export const Header: React.FC<Header> = ({ chatId }) => {
-	const { name, is_connected, last_connected_at, profileImage } = useHeaderChat(chatId);
+	const { username, is_connected, last_connected_at, profileImage } = useHeaderChat(chatId);
 
 	return (
 	<div className="flex items-center p-4 align-content">
@@ -48,7 +48,7 @@ export const Header: React.FC<Header> = ({ chatId }) => {
 			className="w-10 h-10 rounded-full" 
 		/>
 		<div className='ml-4'>
-			<h2 className="mt-0 text-lg font-semibold opacity-100">{name}</h2>
+			<h2 className="mt-0 text-lg font-semibold opacity-100">{username}</h2>
 			<p className="mt-0 text-xs font-semibold opacity-60">{is_connected ? 'online' : lastConnection(last_connected_at)} </p>
 		</div>
 	</div>

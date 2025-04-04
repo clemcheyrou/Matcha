@@ -25,8 +25,8 @@ export const addNewChat = async (userId1, userId2) => {
 export const getAllChats = async (userId) => {
 	const query = `
 		SELECT chat.*,
-			u1.name AS user_1_name,
-			u2.name AS user_2_name,
+			u1.username AS user_1_name,
+			u2.username AS user_2_name,
 			p1.url AS user_1_profile_photo,
 			p2.url AS user_2_profile_photo,
 			CASE 
