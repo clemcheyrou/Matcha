@@ -52,6 +52,7 @@ export const registerUser = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
+      console.log("Données envoyées :", userData); //pas vide
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -59,7 +60,7 @@ export const registerUser = createAsyncThunk(
         credentials: "include",
       });
       const data = await response.json();
-
+      console.log("Réponse du serveur :", data);
       if (!response.ok) {
         return rejectWithValue(data.message || "registration failed");
       }

@@ -12,6 +12,8 @@ import { fetchUser } from "../../store/slice/authSlice.ts";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store.ts";
 
+//pas de provider detecte : null / pas token detecter
+//http://localhost:3000/undefined/api/auth/register 404 (
 export const Register = () => {
 	const { formData, errors, isFormValid, handleChange } = useForm();
 	const [showPassword, setShowPassword] = useState(false);
@@ -28,19 +30,31 @@ export const Register = () => {
 
     useEffect(() => {
         const urlParams = searchParams.get("provider");
+		console.log("Provider détecté :", urlParams);
 
         if (urlParams) {
             const checkAuthentication = async () => {
+				console.log("Vérification de l'authentification en cours...");
                     const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/status`, {
                         method: "GET",
                         credentials: "include",
                     });
-					console.log("FRONT : AVANT REPONSE");
+					console.log("Réponse du serveur :", response);
                     if (response.ok) {
-                        const data = await response.json();
+						//////////////////////////////////////////////////
+						const text = await response.text(); // Lire la réponse brute
+						console.log("Contenu brut de la réponse:", text);
+
+						const data = JSON.parse(text); // Convertir en JSON si possible
+						console.log("ées JSON parsées:", data); 
+						//////////////////////////////////////////////
+                        // const data = await response.json();
+						// console.log("ées reçues :", data);
                         if (data.authenticated) {
+							console.log("Utilisateur authentifié, redirection vers /step1");
                             navigate('/step1');
                         } else {
+							console.log("Non authentifié, redirection vers /register");
                             navigate('/register');
                         }
                     }
@@ -51,7 +65,9 @@ export const Register = () => {
 
 	useEffect(() => {
 		const errorParam = searchParams.get("error");
+		console.log("Paramètre error détecté :", errorParam);
 		if (errorParam === "email_exists") {
+			console.log("Erreur : l'email existe déjà !");
 			setEmailError(true);
 		} else {
 			setEmailError(false);
@@ -60,16 +76,20 @@ export const Register = () => {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		console.log("Formulaire soumis avec :", formData); // pas vide
 		try {
 			const response = await register(formData);
+			console.log("Réponse de l'inscription :", response);
 			if (response.success) {
 				setPopupMessage("email confirmation have been send");
 				setIsPopupVisible(true);
 				setEmailError(false);
 			} else if (response.message === "email_exists") {
+				console.log("L'email existe déjà !");
 				setEmailError(true);
 			}
 		} catch (error) {
+			console.error("Erreur lors de l'inscription :", error);
 			console.error("error during registration:", error);
 			setPopupMessage("error try again");
 			setIsPopupVisible(true);
@@ -78,9 +98,11 @@ export const Register = () => {
 
 	useEffect(() => {
 		const token = searchParams.get("token");
+		console.log("Token détecté dans l'URL :", token);
 
 		if (token) {
 			const confirmEmail = async () => {
+				console.log("Début de la confirmation d'email...");
 				try {
 					const response = await fetch(
 						`${process.env.REACT_APP_API_URL}/api/auth/confirm-email?token=${token}`,
@@ -89,17 +111,21 @@ export const Register = () => {
 							credentials: "include",
 						}
 					);
-
+					console.log("Réponse du serveur :", response);
 					const data = await response.json();
+					console.log("Données reçues :", data);
 
 					if (data.success) {
+						console.log("Email confirmé avec succès, récupération des infos utilisateur...");
 						await dispatch(fetchUser());
 						navigate("/step1");
 					} else {
+						console.error("Erreur de confirmation !");
 						throw new Error("error to confirm");
 					}
 				} catch (error) {
 					console.error("error:",error);
+					console.error("Erreur lors de la confirmation :", error);
 				}
 			};
 
@@ -265,9 +291,9 @@ export const Register = () => {
 						className={`w-full text-center font-agbalumo text-black rounded-md px-4 py-2 mt-6 ${
 							isFormValid
 								? "bg-pink text-white hover:bg-white hover:text-pink-500"
-								: "bg-gray-300 text-gray-500 cursor-not-allowed"
+								: "bg-gray-300 text-gray-500" // ajout cursor-not-allowed
 						}`}
-						disabled={!isFormValid}
+						//ajout disabled={!isFormValid}
 					>
 						NEXT
 					</button>
