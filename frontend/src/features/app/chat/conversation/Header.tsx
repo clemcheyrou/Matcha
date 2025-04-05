@@ -3,7 +3,7 @@ import { useHeaderChat } from '../hooks/useHeaderChat.ts';
 import { MdArrowBackIosNew } from "react-icons/md";
 import { Link } from 'react-router-dom';
 
-type Header = {
+type HeaderProps = {
   chatId: number;
 }
 
@@ -36,7 +36,7 @@ export const lastConnection = (lastConnection: string | null): string => {
 }
 
 
-export const Header: React.FC<Header> = ({ chatId }) => {
+export const Header: React.FC<HeaderProps> = ({ chatId }) => {
 	const { username, is_connected, last_connected_at, profileImage } = useHeaderChat(chatId);
 
 	return (

@@ -25,8 +25,8 @@ export const audioHandler = (socket) => {
 
 			const result = await pool.query(
 				`SELECT chat.*,
-						u1.name AS user_1_name,
-						u2.name AS user_2_name
+						u1.username AS user_1_name,
+						u2.username AS user_2_name
 				 FROM chat
 				 LEFT JOIN users u1 ON chat.user_1_id = u1.id
 				 LEFT JOIN users u2 ON chat.user_2_id = u2.id

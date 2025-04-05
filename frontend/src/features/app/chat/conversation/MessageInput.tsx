@@ -5,7 +5,7 @@ import { BsSend } from "react-icons/bs";
 import { useParams } from "react-router-dom";
 import { EventPlanning } from "./EventPlanning.tsx";
 
-interface MessageInput {
+interface MessageInputProps {
 	newMessage: string;
 	setNewMessage: (message: string) => void;
 	sendMessage: () => void;
@@ -13,7 +13,7 @@ interface MessageInput {
 	setNewAudio: (audio: string) => void;
 }
 
-export const MessageInput: React.FC<MessageInput> = ({
+export const MessageInput: React.FC<MessageInputProps> = ({
 	newMessage,
 	setNewMessage,
 	sendMessage,
