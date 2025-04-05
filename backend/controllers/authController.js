@@ -14,10 +14,12 @@ export const register = async (req, res) => {
 		if (!lastname || !firstname || !username || !email || !password)
 			return res.status(400).json({ message: "all fields are required." });
 		const user = await getUserByEmail(email); 
-        //
 		if (user)
             return res.status(409).json({ message: "email_exists" });
-		const hashedPassword = await bcrypt.hash(password, 10);
+		const pseudo = await getUserByUsername(username);
+        if (pseudo)
+            return res.status(409).json({ message: "username_exists" });
+        const hashedPassword = await bcrypt.hash(password, 10);
 		const userId = await createUser(
 			username,
 			lastname,

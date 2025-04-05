@@ -56,9 +56,9 @@ export const likeHandler = (socket) => {
 
 		const likedUserSocketId = users[likedUserId];
 		const user = await getUserById(userId);
-		const name = user.name;
+		const name = user.username;
 		const userLiked = await getUserById(likedUserId);
-		const nameLiked = userLiked.name;
+		const nameLiked = userLiked.username;
 
 		await createNotification(likedUserId, 'unlike', userId, `You and ${nameLiked} are now a match`);
 		await createNotification(userId, 'unlike', likedUserId, `You and ${name} are now a match`);
@@ -75,7 +75,7 @@ export const likeHandler = (socket) => {
 	async function notifyLike(userId, likedUserId) {
 		const likedUserSocketId = users[likedUserId];
 		const user = await getUserById(userId);
-		const name = user.name;
+		const name = user.username;
 
 		const likedUserBlocked = await hasBlocked(likedUserId, userId);
 		if (!likedUserBlocked) {
@@ -133,7 +133,7 @@ export const likeHandler = (socket) => {
 	async function handleUnlike(userId, likedUserId, wasMatched) {
 		const likedUserSocketId = users[likedUserId];
 		const user = await getUserById(userId, likedUserId);
-		const name = user.name;
+		const name = user.username;
 		const likedUserBlocked = await hasBlocked(likedUserId, userId);
 
 		if (!likedUserBlocked) {

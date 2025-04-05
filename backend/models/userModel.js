@@ -122,7 +122,9 @@ export const findUsersByPreference = async (userId, filters) => {
     let query = `
         SELECT 
             u.id, 
-            u.username, 
+            u.username,
+			u.firstname,
+			u.lastname,
             u.age, 
             u.gender, 
             u.bio, 
@@ -237,7 +239,8 @@ export const deleteUser = async (userId) => {
 	const result = await pool.query(query, values);
 	return result.rowCount > 0;
 };
-/////change name => username
+//change name => username 
+// AJOUT CONDITION SPLIT
 export const createUserSocial = async (username, email, provider) => {
 	const query = `
 	  INSERT INTO users (username, email, password, auth_type)
