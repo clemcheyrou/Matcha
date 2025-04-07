@@ -340,7 +340,7 @@ export const findUsersInMatch = async (userId) => {
 export const updateUserProfile = async (userId, updates) => {
 	const fieldsToUpdate = [];
 	const values = [];
-
+	console.log(updates)
 	if (updates.name) {
 		fieldsToUpdate.push("name = $" + (fieldsToUpdate.length + 1));
 		values.push(updates.name);
@@ -357,9 +357,13 @@ export const updateUserProfile = async (userId, updates) => {
 		fieldsToUpdate.push("gender = $" + (fieldsToUpdate.length + 1));
 		values.push(updates.gender);
 	}
-	if (updates.bio) {
+	if (updates.sexualPreference) {
+		fieldsToUpdate.push("orientation = $" + (fieldsToUpdate.length + 1));
+		values.push(updates.sexualPreference);
+	}
+	if (updates.biography) {
 		fieldsToUpdate.push("bio = $" + (fieldsToUpdate.length + 1));
-		values.push(updates.bio);
+		values.push(updates.biography);
 	}
 	if (updates.location) {
 		fieldsToUpdate.push("location = $" + (fieldsToUpdate.length + 1));
