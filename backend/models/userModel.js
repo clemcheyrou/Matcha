@@ -69,46 +69,57 @@ export const getUserById = async (idView, userId) => {
 
 export const findUsersByPreference = async (userId, filters) => {
     let orderByClause = "";
-    let values = [userId, filters.genderPreference];
+    let values = [userId];
     let conditions = [
         "u.id <> $1",
-        "u.gender = $2",
         "m.user_1_id IS NULL",
         "m.user_2_id IS NULL",
         "b.blocked_user_id IS NULL"
     ];
 
-	const isPhotoQuery = `
-		SELECT 1
-		FROM photos p
-		JOIN users u ON u.profile_photo_id = p.id
-		WHERE u.id = $1
-	`;
-	const photoCheckResult = await pool.query(isPhotoQuery, [userId]);
+    let paramIndex = 2;
 
-	if (photoCheckResult.rows.length === 0)
-		return [];
+    if (filters.genderPreference === "Man" || filters.genderPreference === "Woman") {
+        conditions.push(`u.gender = $${paramIndex}`);
+        values.push(filters.genderPreference);
+        paramIndex++;
+    }
+
+    const isPhotoQuery = `
+        SELECT 1
+        FROM photos p
+        JOIN users u ON u.profile_photo_id = p.id
+        WHERE u.id = $1
+    `;
+    const photoCheckResult = await pool.query(isPhotoQuery, [userId]);
+
+    if (photoCheckResult.rows.length === 0)
+        return [];
 
     if (filters.ageRange && filters.ageRange.length === 2) {
-        conditions.push("u.age BETWEEN $3 AND $4");
+        conditions.push(`u.age BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
         values.push(filters.ageRange[0], filters.ageRange[1]);
+        paramIndex += 2;
     }
 
     if (filters.locationRange && filters.locationRange.length === 2) {
-        conditions.push("6371 * acos( cos(radians(loc1.lat)) * cos(radians(loc2.lat)) * cos(radians(loc2.lng) - radians(loc1.lng)) + sin(radians(loc1.lat)) * sin(radians(loc2.lat)) ) BETWEEN $5 AND $6");
+        conditions.push(`6371 * acos( cos(radians(loc1.lat)) * cos(radians(loc2.lat)) * cos(radians(loc2.lng) - radians(loc1.lng)) + sin(radians(loc1.lat)) * sin(radians(loc2.lat)) ) BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
         values.push(filters.locationRange[0], filters.locationRange[1]);
+        paramIndex += 2;
     }
 
     if (filters.fameRange && filters.fameRange.length === 2) {
-        conditions.push(`(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) BETWEEN $${values.length + 1} AND $${values.length + 2}`);
+        conditions.push(`(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
         values.push(filters.fameRange[0], filters.fameRange[1]);
+        paramIndex += 2;
     }
 
     if (filters.tags && filters.tags.length > 0) {
-        const tagIndexStart = values.length + 1;
+        const tagIndexStart = paramIndex;
         const tagConditions = `u.interests && ARRAY[${filters.tags.map((tag, index) => `$${tagIndexStart + index}`).join(", ")}]`;
         conditions.push(tagConditions);
         values.push(...filters.tags);
+        paramIndex += filters.tags.length;
     }
 
     let query = `
@@ -148,7 +159,7 @@ export const findUsersByPreference = async (userId, filters) => {
 				ORDER BY (
 					SELECT COUNT(*) 
 					FROM unnest(u.interests::text[]) AS interest
-					WHERE interest ILIKE ANY(ARRAY[${filters.tags.map((tag, index) => `$${values.length + index + 1}`).join(", ")}])
+					WHERE interest ILIKE ANY(ARRAY[${filters.tags.map((tag, index) => `$${paramIndex + index + 1}`).join(", ")}])
 				) DESC
 			`;
 			values.push(...filters.tags);
@@ -340,26 +351,32 @@ export const findUsersInMatch = async (userId) => {
 export const updateUserProfile = async (userId, updates) => {
 	const fieldsToUpdate = [];
 	const values = [];
-	console.log(updates)
 	if (updates.name) {
 		fieldsToUpdate.push("name = $" + (fieldsToUpdate.length + 1));
 		values.push(updates.name);
 	}
+
+	const userWithNewEmail = await getUserByEmail(updates.email);
+	if (userWithNewEmail && userWithNewEmail.id !== userId) {
+		return res.status(409).json({ message: "email_exists" });
+	}
+
 	if (updates.email) {
 		fieldsToUpdate.push("email = $" + (fieldsToUpdate.length + 1));
 		values.push(updates.email);
 	}
+
 	if (updates.age !== undefined) {
 		fieldsToUpdate.push("age = $" + (fieldsToUpdate.length + 1));
 		values.push(updates.age);
 	}
+	if (updates.sexualPreference !== undefined) {
+		fieldsToUpdate.push("orientation = $" + (fieldsToUpdate.length + 1));
+		values.push(updates.sexualPreference);
+	}
 	if (updates.gender) {
 		fieldsToUpdate.push("gender = $" + (fieldsToUpdate.length + 1));
 		values.push(updates.gender);
-	}
-	if (updates.sexualPreference) {
-		fieldsToUpdate.push("orientation = $" + (fieldsToUpdate.length + 1));
-		values.push(updates.sexualPreference);
 	}
 	if (updates.biography) {
 		fieldsToUpdate.push("bio = $" + (fieldsToUpdate.length + 1));
@@ -398,6 +415,6 @@ export const updateUserProfile = async (userId, updates) => {
 	if (result.rowCount === 0) {
 		throw new Error("User not found");
 	}
-
+	console.log(result.rows[0])
 	return result.rows[0];
 };

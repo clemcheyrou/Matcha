@@ -99,7 +99,7 @@ export const Settings: React.FC = () => {
 			setEmail(user.email);
 			setAge(user.age || undefined);
 			setGender(user.gender || "");
-			setSexualPreference(user.orientation || undefined);
+			setSexualPreference(user.orientation || 0);
 			setBiography(user.bio || "");
 			setInterests(user.interests || []);
 		} else {
