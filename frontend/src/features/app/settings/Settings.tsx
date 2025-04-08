@@ -9,10 +9,29 @@ import { addPhoto, fetchPhotos } from "../../../store/slice/photosSlice.ts";
 import { PhotoGrid } from "../../onboarding/step1/PhotoGrid.tsx";
 import { PhotoPopin } from "../../onboarding/step1/PhotoPopin.tsx";
 
+const interestsList = [
+	"Vegan",
+	"Geek",
+	"Piercing",
+	"Music",
+	"Gaming",
+	"Fitness",
+	"Travel",
+	"Books",
+	"Movies",
+	"Art",
+  ];
+
 const TABS = [
 	{ key: "profile" as const, label: "Profile" },
 	{ key: "photos" as const, label: "Photos" },
   ];
+
+ const orientationOptions = [
+	{ value: 0, label: "Heterosexual" },
+	{ value: 1, label: "Homosexual" },
+	{ value: 2, label: "Bisexual" },
+];
 
 export const Settings: React.FC = () => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -21,6 +40,7 @@ export const Settings: React.FC = () => {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [gender, setGender] = useState("");
+	const [age, setAge] = useState<number | undefined>();
 	const [sexualPreference, setSexualPreference] = useState<
 		number | undefined
 	>();
@@ -77,8 +97,9 @@ export const Settings: React.FC = () => {
 		if (user) {
 			setName(user.name);
 			setEmail(user.email);
+			setAge(user.age || undefined);
 			setGender(user.gender || "");
-			setSexualPreference(user.orientation || undefined);
+			setSexualPreference(user.orientation || 0);
 			setBiography(user.bio || "");
 			setInterests(user.interests || []);
 		} else {
@@ -100,6 +121,7 @@ export const Settings: React.FC = () => {
 					name,
 					email,
 					gender,
+					age,
 					sexualPreference,
 					biography,
 					interests,
@@ -112,6 +134,7 @@ export const Settings: React.FC = () => {
 					name,
 					email,
 					gender,
+					age,
 					sexualPreference,
 					biography,
 					interests,
@@ -146,7 +169,7 @@ export const Settings: React.FC = () => {
 	};
 
 	return (
-		<div className="p-6 rounded-lg shadow-md">
+		<div className="p-6 rounded-lg shadow-md overflow-y-auto max-h-[80vh]">
 			<h1 className="text-3xl font-semibold mb-10">Edit Profile</h1>
 
 			<div className="rounded bg-[#191919] flex-1 min-w-[150px] py-1 pl-1">
@@ -174,6 +197,16 @@ export const Settings: React.FC = () => {
 							required
 							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
 						/>
+						<input
+							type="number"
+							value={age}
+							onChange={(e) => setAge(e.target.value === "" ? undefined : Number(e.target.value))}
+							placeholder="Age"
+							min={18}
+							max={100}
+							required
+							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
+						/>
 						<select
 							value={gender}
 							onChange={(e) => setGender(e.target.value)}
@@ -183,29 +216,59 @@ export const Settings: React.FC = () => {
 							<option value="Man">Man</option>
 							<option value="Woman">Woman</option>
 						</select>
+						<select
+							value={sexualPreference}
+							onChange={(e) =>
+								setSexualPreference(e.target.value === "" ? undefined : Number(e.target.value))
+							}
+							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
+						>
+							<option value="">Select Orientation</option>
+							{orientationOptions.map((option) => (
+								<option key={option.value} value={option.value}>
+									{option.label}
+								</option>
+							))}
+						</select>
 						<textarea
 							value={biography}
 							onChange={(e) => setBiography(e.target.value)}
 							placeholder="Biography"
 							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
 						/>
-						<input
-							type="text"
-							value={interests.join(", ")}
-							onChange={(e) =>
-								setInterests(
-									e.target.value
-										.split(",")
-										.map((tag) => tag.trim())
-								)
-							}
-							placeholder="Interests (comma-separated)"
-							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
-						/>
+						<div>
+							<label className="block mb-2">Interests</label>
+							<div className="flex flex-wrap gap-2">
+								{interestsList.map((interest) => (
+									<div
+										key={interest}
+										onClick={() => {
+											setInterests((prev) =>
+												prev.includes(interest)
+													? prev.filter((i) => i !== interest)
+													: [...prev, interest]
+											);
+										}}
+										className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-all
+											${
+												interests.includes(interest)
+													? "bg-pink text-white"
+													: "border text-white hover:bg-gray-300 hover:text-black"
+											}`}
+									>
+										{interest}
+									</div>
+								))}
+							</div>
+						</div>
 						<button
 							type="submit"
-							disabled={loading}
-							className="w-full bg-pink text-white py-2 rounded-md hover:bg-pink-600 transition disabled:bg-gray-400"
+							disabled={loading || interests.length < 1}
+							className={`w-full py-2 rounded-md transition ${
+								interests.length < 1 || loading
+									? "bg-gray-400 cursor-not-allowed"
+									: "bg-pink text-white hover:bg-pink-600"
+							}`}						
 						>
 							{loading ? "Updating..." : "Update Profile"}
 						</button>
