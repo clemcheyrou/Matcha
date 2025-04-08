@@ -15,7 +15,6 @@ router.patch("/save-orientation", saveOrientation);
 router.patch("/save-interests", saveInterests);
 router.delete('/photos/:photoId', deletePhoto);
 router.patch('/profile', [
-    check('username').optional().isString().isLength({ max: 100 }),
     check('firstname').optional().isString().isLength({ max: 100 }),
     check('lastname').optional().isString().isLength({ max: 100 }),
     check('email').optional().isEmail().isLength({ max: 100 }),

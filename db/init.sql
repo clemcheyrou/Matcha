@@ -96,13 +96,24 @@ VALUES
     ('Emma67','Emma', 'Laurent','emma@example.com', NULL, 29, 'Woman', 'test bio', ARRAY['Movies'], 'apple', 'oauth_token_example3', 2)
 ON CONFLICT DO NOTHING;
 
-INSERT INTO photos (url, type)
-VALUES
-    ('/uploads/photo-1739293755832-813915178.jpg', 'default'),
-    ('/uploads/photo-1739293755832-813915178.jpg', 'default');
+DO $$ 
+DECLARE 
+    i INT := 1;
+BEGIN
+    FOR i IN 1..5 LOOP
+        INSERT INTO photos (url, type, user_id) 
+        VALUES 
+            ('/uploads/photo_1.jpg', 'default', i),
+            ('/uploads/photo_2.jpg', 'default', i),
+            ('/uploads/photo_3.jpg', 'default', i),
+            ('/uploads/photo_4.jpg', 'default', i),
+            ('/uploads/photo_5.jpg', 'default', i);
+    END LOOP;
+
+END $$;
 
 WITH photo_ids AS (
-    SELECT id, url, ROW_NUMBER() OVER () AS row_num FROM photos WHERE type = 'default'
+    SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS row_num FROM photos WHERE type = 'default'
 )
 
 UPDATE users

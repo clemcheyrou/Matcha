@@ -294,13 +294,12 @@ export const getUserLocationController = async (req, res) => {
   
 	  const { rows } = await pool.query(query, values);
 	  if (rows.length === 0) {
-		return res.status(404).json({ error: "location not found" });
+		return res.status(200).json({ message: "location not found" });
 	  }
   
 	  const { lat, lng } = rows[0];
 	  return res.json({ lat, lng });
 	} catch (error) {
-	  console.error(error);
-	  return res.status(500).json({ error: "server error" });
+	  return res.status(200).json({ message: "location not found" });
 	}
 };

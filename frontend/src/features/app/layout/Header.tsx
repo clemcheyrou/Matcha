@@ -23,11 +23,13 @@ export const Header = () => {
             credentials: "include",
           });
 
-          if (!response.ok) {
-            throw new Error("failed to fetch location");
-          }
+          if (!response.ok)
+            return;
 
           const data = await response.json();
+          if (data.message)
+            return;
+
           const { lat, lng } = data;
 
           dispatch(setLocation({ lat, lng, city: "" }));
@@ -40,7 +42,7 @@ export const Header = () => {
 
           dispatch(setLocation({ lat, lng, city: newCity }));
         } catch (error) {
-          console.error("error fetching location:", error);
+          console.log("no location for the moment");
         }
       };
 

@@ -18,9 +18,8 @@ const interestsList = [
 	"Art",
 ];
 
-const Tag = ({ key, interest, isSelected, toggleInterest }) => (
+const Tag = ({ interest, isSelected, toggleInterest }) => (
 	<div
-		key={interest}
 		onClick={() => toggleInterest(interest)}
 		className={`cursor-pointer px-4 py-2 rounded-md text-sm font-medium transition-all
       ${
@@ -84,12 +83,13 @@ export const UserInterestSelector = () => {
 
 				<div className="flex flex-wrap gap-3 justify-center mt-10">
 					{interestsList.map((interest) => (
-						<Tag
-							key={interest}
-							interest={interest}
-							isSelected={selectedInterests.includes(interest)}
-							toggleInterest={toggleInterest}
-						/>
+						<div key={interest}>
+							<Tag
+								interest={interest}
+								isSelected={selectedInterests.includes(interest)}
+								toggleInterest={toggleInterest}
+							/>
+						</div>
 					))}
 				</div>
 

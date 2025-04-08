@@ -69,7 +69,7 @@ export const getChatHeaderController = async (req, res) => {
 				? chatInfo.user_2_last_connected
 				: chatInfo.user_1_last_connected;
 		
-		return res.json({ name: userName, profileImage: userImage, is_connected: userConnected, last_connected_at: userLastConnection});
+		return res.json({ username: userName, profileImage: userImage, is_connected: userConnected, last_connected_at: userLastConnection});
 	} catch (error) {
 		res.status(500).json({ error: "error to get chat info" });
 	}

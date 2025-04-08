@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 interface UserLocation {
     id: number;
-    name: string;
+    username: string;
     lat: number;
     lng: number;
     isCurrentUser?: boolean;

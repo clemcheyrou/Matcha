@@ -37,8 +37,6 @@ export const useAuth = () => {
 		username: string;
 		password: string;
 	}) => {
-		console.log("Username:", formData.username);
-		console.log("Password:", formData.password);
 		try {
 			const response = await dispatch(
 				loginUser({
@@ -46,7 +44,6 @@ export const useAuth = () => {
 					password: formData.password,
 				})
 			).unwrap();
-			console.log("Login successful, response:", response);
 			return response;
 		} catch (err) {
 			console.error("error login user:", err);

@@ -142,47 +142,36 @@ export const findUsersByPreference = async (userId, filters) => {
 	const userGender = await getUserGender(userId);
 
     let otherPref = '';
-	//je veux des hommes
     if (filters.genderPreference === "Man") {
-		//veut homme attire par femme hetero ou bi
 		if (userGender === 'Woman')
 			otherPref = `
 				u.gender = 'Man' AND u.orientation IN (0, 2)
 			`;
-		//veut homme attire par homme homo ou bi
 		if (userGender === 'Man')
 			otherPref = `
 				u.gender = 'Man' AND u.orientation IN (1, 2)
 		`;
     }
-	//je veux des femmes
-	if (filters.genderPreference === "Woman") {
-		//veut femme attire par homme hetero ou bi
+	else if (filters.genderPreference === "Woman") {
 		if (userGender === 'Man')
 			otherPref = `
 				u.gender = 'Man' AND u.orientation IN (0, 2)
 			`;
-		//veut femme attire par femme homo ou bi
 		if (userGender === 'Woman')
 			otherPref = `
 				u.gender = 'Woman' AND u.orientation IN (1, 2)
 		`;
 	}
-	//je veux tout le monde
-	if (!filters.genderPreference) {
-		//veut homme attire par homme homo ou bi
-		//veut femme attire par homme hetero ou bi
+	else {
 		if (userGender === 'Man')
 			otherPref = `
 				u.gender = 'Man' AND u.orientation IN (1, 2)
-				AND u.gender = 'Woman' AND u.orientation IN (0, 2)
+				OR u.gender = 'Woman' AND u.orientation IN (0, 2)
 			`;
-		//veut homme attire par femme homo ou bi
-		//veut femme attire par femme hetero ou bi
 		if (userGender === 'Woman')
 			otherPref = `
 				u.gender = 'Woman' AND u.orientation IN (1, 2)
-				AND u.gender = 'Man' AND u.orientation IN (0, 2)
+				OR u.gender = 'Man' AND u.orientation IN (0, 2)
 		`;	
 	}
     if (otherPref) {
@@ -429,14 +418,19 @@ export const updateUserProfile = async (userId, updates) => {
 	const fieldsToUpdate = [];
 	const values = [];
 
-	if (updates.username) {
-		fieldsToUpdate.push("username = $" + (fieldsToUpdate.length + 1));
-		values.push(updates.username);
-	}
-
 	const userWithNewEmail = await getUserByEmail(updates.email);
 	if (userWithNewEmail && userWithNewEmail.id !== userId) {
 		return res.status(409).json({ message: "email_exists" });
+	}
+
+	if (updates.firstname) {
+		fieldsToUpdate.push("firstname = $" + (fieldsToUpdate.length + 1));
+		values.push(updates.firstname);
+	}
+
+	if (updates.lastname) {
+		fieldsToUpdate.push("lastname = $" + (fieldsToUpdate.length + 1));
+		values.push(updates.lastname);
 	}
 
 	if (updates.email) {

@@ -20,6 +20,7 @@ export const useHeaderChat = (chatId: number): ChatHeaderData => {
       try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/chat/${chatId}/header`, {credentials: 'include'});
         const data = await response.json();
+        console.log(data)
         setHeaderData({
           username: data.username,
 		      is_connected: data.is_connected,

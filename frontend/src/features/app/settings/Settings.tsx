@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../store/store";
 import {
@@ -37,7 +37,6 @@ export const Settings: React.FC = () => {
 	const dispatch = useDispatch<AppDispatch>();
 	const user = useSelector((state: RootState) => state.auth.user);
 
-	const [username, setUsername] = useState("");
 	const [firstname, setFirstname] = useState("");
 	const [lastname, setLastname] = useState("");
 	const [email, setEmail] = useState("");
@@ -95,9 +94,8 @@ export const Settings: React.FC = () => {
 		dispatch(fetchPhotos());
 	}, [dispatch]);
 
-	useEffect(() => {
+	useMemo(() => {
 		if (user) {
-			setUsername(user.username);
 			setFirstname(user.firstname);
 			setLastname(user.lastname);
 			setEmail(user.email);
@@ -122,7 +120,6 @@ export const Settings: React.FC = () => {
 					addPhoto(profilePicture)
 				).unwrap();
 				const profileData = {
-					username,
 					firstname,
 					lastname,
 					email,
@@ -137,7 +134,6 @@ export const Settings: React.FC = () => {
 				await dispatch(updateUserProfile(profileData)).unwrap();
 			} else {
 				const profileData = {
-					username,
 					firstname,
 					lastname,
 					email,
@@ -191,14 +187,6 @@ export const Settings: React.FC = () => {
 					<form onSubmit={handleProfileUpdate} className="space-y-4 mt-10">
 						<input
 							type="text"
-							value={username}
-							onChange={(e) => setUsername(e.target.value)}
-							placeholder="Username"
-							required
-							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
-						/>
-						<input
-							type="text"
 							value={firstname}
 							onChange={(e) => setFirstname(e.target.value)}
 							placeholder="Firstname"
@@ -213,14 +201,16 @@ export const Settings: React.FC = () => {
 							required
 							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
 						/>
-						<input
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							placeholder="Email"
-							required
-							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
-						/>
+						{ user && user.auth_type == 'local' &&
+							<input
+								type="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								placeholder="Email"
+								required
+								className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
+							/>
+						}
 						<input
 							type="number"
 							value={age}

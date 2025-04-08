@@ -8,7 +8,6 @@ import { io, users } from "../index.js";
 
 export const register = async (req, res) => {
 	const { username, lastname, firstname, email, password } = req.body;
-    console.log("BACK = Données reçues :", req.body);
 
 	try {
 		if (!lastname || !firstname || !username || !email || !password)

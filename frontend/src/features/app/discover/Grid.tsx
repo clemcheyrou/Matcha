@@ -27,8 +27,8 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 	};
 	if (loading) return <p className="text-center mt-4">Loading...</p>;
 	return (
-		<div className="overflow-y-scroll pt-4">
-			<div className="overflow-y-scroll pt-4 mx-1">
+		<div className="overflow-y-auto pt-4">
+			<div className="overflow-y-auto pt-4 mx-1">
 				{error ? (
 					<div className="text-center">
 						You're too beautiful to be left alone, so don't wait any longer

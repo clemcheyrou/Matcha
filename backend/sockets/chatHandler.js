@@ -49,7 +49,7 @@ export const chatHandler = (socket) => {
         const photo = chat.user_1_id == userId ? chat.user_2_profile_photo : chat.user_1_profile_photo;
 			return {
 				...chat,
-				name: name,
+				username: name,
 				photo: photo
 			  };
 		})

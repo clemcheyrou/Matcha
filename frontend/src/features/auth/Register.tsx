@@ -56,13 +56,10 @@ export const Register = () => {
 
 	useEffect(() => {
 		const errorParam = searchParams.get("error");
-		console.log("Paramètre error détecté :", errorParam);
 		if (errorParam === "email_exists") {
-			console.log("Erreur : l'email existe déjà !");
 			setEmailError(true);
 		} 
 		else if (errorParam === "username_exists") {
-			console.log("Erreur : le pseudo existe déjà !");
 			setUsernameError(true);
 		} else {
 			setEmailError(false);
@@ -79,11 +76,9 @@ export const Register = () => {
 				setIsPopupVisible(true);
 				setEmailError(false);
 			} else if (response.message === "email_exists") {
-				console.log("L'email existe déjà !");
 				setEmailError(true);
 			}
 			else if (response.message === "username_exists") {
-				console.log("Le pseudo existe déjà !");
 				setUsernameError(true);
 			}
 		} catch (error) {

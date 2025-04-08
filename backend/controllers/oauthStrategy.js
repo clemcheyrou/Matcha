@@ -20,22 +20,16 @@ export const createOAuthStrategy = (Strategy, provider, options) => {
 				if (profile.name) {
 					firstname = profile.name.givenName || "";
 					lastname = profile.name.familyName || "";
-				} else if (profile.displayName) {
-					const nameParts = profile.displayName.split(" ");
-					firstname = nameParts[0] || "";
-					lastname = nameParts.slice(1).join(" ") || "Unknown";
 				}
-
-				if (!firstname) firstname = profile.displayName;
-				if (!lastname) lastname = profile.displayName;
 
 				const baseUsername = `${firstname}.${lastname}`.toLowerCase();
 				const username = await generateUniqueUsername(baseUsername);
 
 				if (process.env.USE_DATABASE === "true") {
-					const user = await getUserByEmail(email);
+					const userMail = await getUserByEmail(email);
+					const userUsername = await getUserByUsername(username);
 
-					if (!user) {
+					if (!userMail && !userUsername) {
 						const newUser = await createUserSocial(
 							username,
 							email,
@@ -45,7 +39,7 @@ export const createOAuthStrategy = (Strategy, provider, options) => {
 						);
 						return done(null, { id: newUser.id, accessToken: access_token, profile });
 					} else {
-						return done(null, { id: user.id, accessToken: access_token, profile });
+						return done(null, { id: userMail.id, accessToken: access_token, profile });
 					}
 				}
 			} catch (err) {

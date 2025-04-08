@@ -15,7 +15,7 @@ createOAuthStrategy(
 		clientID: process.env.FACEBOOK_API_KEY,
 		clientSecret: process.env.FACEBOOK_API_SECRET,
 		callbackURL: process.env.FACEBOOK_CALLBACK_URL,
-		profileFields: ["id", "displayName", "emails", "photos"],
+		profileFields: ["id", "displayName", "emails", "photos", "name"],
 		scope: ["email", "user_photos"],
 	},
 	pool

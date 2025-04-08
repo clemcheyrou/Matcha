@@ -41,7 +41,7 @@ export const Nearby = () => {
 	return (
 		<div className="mt-10 mx-6">
 			<LoadScript
-				googleMapsApiKey={""}
+				googleMapsApiKey={`${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`}
 			>
 		      <GoogleMap
 		        mapContainerStyle={containerStyle}
@@ -51,10 +51,10 @@ export const Nearby = () => {
 		      >
 		        {locations.map((location) => (
 		          <Marker
-		            key={location.id}
+		            key={location.username}
 		            position={{ lat: location.lat, lng: location.lng }}
 		            label={{
-		              text: location.name,
+		              text: location.username,
 		              color: "#ffffff",
 		              fontSize: "12px",
 		              fontWeight: "bold",
