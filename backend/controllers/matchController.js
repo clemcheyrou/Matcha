@@ -19,7 +19,9 @@ export const discoverNewUsers = async (req, res) => {
 		if (orientation === 0)
 			genderPreference = gender === "Man" ? "Woman" : "Man";
 		else if (orientation === 1)
-			genderPreference = gender;
+			genderPreference = gender === "Man" ? "Man" : "Woman";
+		else if (orientation === 2)
+			genderPreference = 'All';
 
 		const { sortBy, ageMin, ageMax, locationMin, locationMax, fameMin, fameMax, tags } = req.query;
 
