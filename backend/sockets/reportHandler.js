@@ -13,7 +13,7 @@ export const reportHandler = (socket) => {
 		try {
 			await reportUser(reportedUserId, userId);
 			const updatedProfile = await getUserById(reportedUserId, userId);
-			socket.emit("profileUpdated", updatedProfile);
+			socket.emit("profileUpdatedReport", updatedProfile);
 		} catch (error) {
 			console.error("error:", error);
 		}
@@ -29,7 +29,7 @@ export const reportHandler = (socket) => {
 		try {
 			await unreportUser(reportedUserId, userId);
 			const updatedProfile = await getUserById(reportedUserId, userId);
-			socket.emit("profileUpdated", updatedProfile);
+			socket.emit("profileUpdatedReport", updatedProfile);
 			socket.emit("unreported", reportedUserId);
 		} catch (error) {
 			console.error("error:", error);

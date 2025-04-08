@@ -15,7 +15,7 @@ export const eventHandler = (socket) => {
 			const otherUserId = await getUserOtherId(chat_id, currentUserId);
 			const otheruser = await getUserById(otherUserId, currentUserId);
 			const user = await getUserById(currentUserId, otherUserId);
-			const titleOf = `Meeting with ${otheruser.name} and ${user.name}`
+			const titleOf = `Meeting with ${otheruser.username} and ${user.username}`
 			const newEvent = await createEvent(titleOf, date, currentUserId, time);
 			await createUserEvent(otherUserId, newEvent.id, "pending");
 			await createUserEvent(currentUserId, newEvent.id, "pending");
@@ -26,8 +26,8 @@ export const eventHandler = (socket) => {
 			const month = newDate.getUTCMonth() + 1;
 			const year = newDate.getUTCFullYear();
 			const formattedDate = `${day < 10 ? '0' : ''}${day}/${month < 10 ? '0' : ''}${month}/${year}`;
-			await createNotification(otherUserId, "message", currentUserId, `${user.name} want to meet you : ${formattedDate}`);
-			socket.to(otherSocketId).emit("notification", formatNotification(`${user.name} want to meet you.`, currentUserId, 'message'));
+			await createNotification(otherUserId, "message", currentUserId, `${user.username} want to meet you : ${formattedDate}`);
+			socket.to(otherSocketId).emit("notification", formatNotification(`${user.username} want to meet you.`, currentUserId, 'message'));
 		} catch (err) {
 			socket.emit("error", { message: "error creating event." });
 		}
@@ -65,7 +65,7 @@ export const eventHandler = (socket) => {
 			const otheruser = await getUserById(userId, creatorId);
 
 			if (recipientSocketId)
-				socket.to(recipientSocketId).emit("notification", formatNotification(`${otheruser.name} has ${updatedStatus} your meeting invitation.`, userId,'event'));
+				socket.to(recipientSocketId).emit("notification", formatNotification(`${otheruser.username} has ${updatedStatus} your meeting invitation.`, userId,'event'));
 		} catch (error) {
 			socket.emit("error", {
 				message: "error responding to invitation.",

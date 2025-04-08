@@ -319,7 +319,7 @@ export const findUsersInMatch = async (userId) => {
 	  SELECT 
 		u.id, 
 		u.username,
-		u.fistname,
+		u.firstname,
 		u.lastname, 
 		u.age, 
 		u.gender, 

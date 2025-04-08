@@ -40,18 +40,32 @@ export const UserProfile = () => {
 					...prevData,
 					liked_by_user: updatedProfile.liked_by_user,
 					blocked_by_user: updatedProfile.blocked_by_user,
-					reported_by_user: updatedProfile.reported_by_user,
 					fame_count: updatedProfile.liked_by_user
-						? (Number(prevData.fame_count) || 0) + 1
-						: Math.max(0, (Number(prevData.fame_count) || 0) - 1)
+					? (Number(prevData.fame_count) || 0) + 1
+					: Math.max(0, (Number(prevData.fame_count) || 0) - 1)
 				};
 			});
 		};
 
+		const handleProfileUpdateReport = (updatedProfile: User) => {
+			setUserData((prevData) => {
+				if (!prevData) return updatedProfile;
+				return {
+					...prevData,
+					reported_by_user: updatedProfile.reported_by_user,
+				};
+			});
+		};
+		
 		socket.on("profileUpdated", handleProfileUpdate);
-		return () => socket.off("profileUpdated", handleProfileUpdate);
+		socket.on("profileUpdatedReport", handleProfileUpdateReport);
+		return () => {
+			socket.off("profileUpdated", handleProfileUpdate);
+			socket.on("profileUpdatedReport", handleProfileUpdateReport);
+		}
 	}, [userId]);
 
+	
 	if (loading) return <div>Loading...</div>;
 	if (error) return <div>Error: {error}</div>;
 
@@ -123,7 +137,7 @@ export const UserProfile = () => {
 						<div className="flex justify-between items-center mb-4">
 							<div>
 								<div className="flex justif-content items-center">
-									<h2 className="text-3xl font-bold font-agbalumo mt-0 mr-4">{userData.name}</h2>
+									<h2 className="text-3xl font-bold font-agbalumo mt-0 mr-4">{userData.username}</h2>
 									<div
 										className={`h-2 w-2 rounded mr-2 mt-2 ${
 											userData.is_connected
