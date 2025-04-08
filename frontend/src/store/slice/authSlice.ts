@@ -35,7 +35,7 @@ export const loginUser = createAsyncThunk(
       if (response.ok) {
         console.log("connected", data.message);
       } else {
-        console.error("not connected", data.message);
+        console.error("not connected", data.message); // on passe ici
       }
 
       return data;
@@ -44,7 +44,7 @@ export const loginUser = createAsyncThunk(
     }
   }
 );
-/////TROUVER MAUVAIS ORDRE DES USERDATA = RECTIFIER
+
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (
@@ -52,7 +52,7 @@ export const registerUser = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      console.log("Données envoyées :", userData); //pas vide
+      console.log("Données envoyées :", userData);
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

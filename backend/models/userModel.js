@@ -17,7 +17,6 @@ export const getUserByEmail = async (email) => {
 	return result.rows[0];
 };
 
-//Create for login
 export const getUserByUsername = async (username) => {
 	const result = await pool.query("SELECT * FROM users WHERE username = $1", [
 		username,
@@ -241,15 +240,16 @@ export const deleteUser = async (userId) => {
 };
 //change name => username 
 // AJOUT CONDITION SPLIT
-export const createUserSocial = async (username, email, provider) => {
+export const createUserSocial = async (username, email, firstname, lastname, provider) => {
 	const query = `
-	  INSERT INTO users (username, email, password, auth_type)
-	  VALUES ($1, $2, $3, $4)
+	  INSERT INTO users (username, email, firstname, lastname, password, auth_type)
+	  VALUES ($1, $2, $3, $4, $5, $6)
 	  RETURNING id, created_at;
 	`;
-	const { rows } = await pool.query(query, [username, email, null, provider]);
+	const { rows } = await pool.query(query, [username, email, firstname, lastname, null, provider]);
 	return rows[0];
 };
+
 
 export const findPhotoByIdAndUser = async (photoId, userId) => {
 	const query = "SELECT id, type FROM photos WHERE id = $1 AND user_id = $2";
@@ -314,7 +314,6 @@ export const updateInterests = async (userId, interests) => {
 	await pool.query(query, values);
 };
 
-//supp u.name et add username/firstname/lastname 
 export const findUsersInMatch = async (userId) => {
 	const query = `
 	  SELECT 

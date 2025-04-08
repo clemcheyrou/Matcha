@@ -51,27 +51,21 @@ export const handleEmailConfirmation = async (req, res) => {
     }
 };
 
-//CHNAGE EMAIL => USERNAME
 export const login = async (req, res) => {
-    const { username, password } = req.body;  // On change email par username
-
+    const { username, password } = req.body;
     try {
-        // Récupérer l'utilisateur par username au lieu de email
         const user = await getUserByUsername(username);
         
         if (!user)
             return res
                 .status(400)
                 .json({ message: "incorrect username or password" });
-
-        // Vérification du mot de passe
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch)
             return res
                 .status(400)
                 .json({ message: "incorrect username or password" });
 
-        // Si l'utilisateur est authentifié, on enregistre l'ID dans la session
         req.session.userId = user.id;
         res.status(200).json({ success: true, message: "successful connection" });
     } catch (error) {
