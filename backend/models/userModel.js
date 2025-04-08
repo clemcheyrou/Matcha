@@ -17,6 +17,13 @@ export const getUserByEmail = async (email) => {
 	return result.rows[0];
 };
 
+export const getUserByUsername = async (username) => {
+	const result = await pool.query("SELECT * FROM users WHERE username = $1", [
+		username,
+	]);
+	return result.rows[0];
+};
+
 export const updateUserVerification = async (userId) => {
 	const query = "UPDATE users SET is_verified = TRUE WHERE id = $1";
 	await pool.query(query, [userId]);
@@ -125,7 +132,9 @@ export const findUsersByPreference = async (userId, filters) => {
     let query = `
         SELECT 
             u.id, 
-            u.name, 
+            u.username,
+			u.firstname,
+			u.lastname,
             u.age, 
             u.gender, 
             u.bio, 
@@ -221,13 +230,16 @@ export const addUserGender = async (gender, userId) => {
 	}
 };
 
-export const createUser = async (name, email, hashedPassword, age, gender) => {
-	const query =
-		"INSERT INTO users (name, email, password, age, gender) VALUES ($1, $2, $3, $4, $5) RETURNING id";
-	const values = [name, email, hashedPassword, age, gender];
+export const createUser = async (username, lastname, firstname, email, hashedPassword, age, gender) => {
+    const query = `
+        INSERT INTO users (username, lastname, firstname, email, password, age, gender)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
+    `;
+    const values = [username, lastname, firstname, email, hashedPassword, age, gender];
 
-	const result = await pool.query(query, values);
-	return result.rows[0].id;
+    const result = await pool.query(query, values);
+    return result.rows[0].id;
 };
 
 export const deleteUser = async (userId) => {
@@ -237,16 +249,18 @@ export const deleteUser = async (userId) => {
 	const result = await pool.query(query, values);
 	return result.rowCount > 0;
 };
-
-export const createUserSocial = async (name, email, provider) => {
+//change name => username 
+// AJOUT CONDITION SPLIT
+export const createUserSocial = async (username, email, firstname, lastname, provider) => {
 	const query = `
-	  INSERT INTO users (name, email, password, auth_type)
-	  VALUES ($1, $2, $3, $4)
+	  INSERT INTO users (username, email, firstname, lastname, password, auth_type)
+	  VALUES ($1, $2, $3, $4, $5, $6)
 	  RETURNING id, created_at;
 	`;
-	const { rows } = await pool.query(query, [name, email, null, provider]);
+	const { rows } = await pool.query(query, [username, email, firstname, lastname, null, provider]);
 	return rows[0];
 };
+
 
 export const findPhotoByIdAndUser = async (photoId, userId) => {
 	const query = "SELECT id, type FROM photos WHERE id = $1 AND user_id = $2";
@@ -315,7 +329,9 @@ export const findUsersInMatch = async (userId) => {
 	const query = `
 	  SELECT 
 		u.id, 
-		u.name, 
+		u.username,
+		u.firstname,
+		u.lastname, 
 		u.age, 
 		u.gender, 
 		u.bio, 
@@ -347,13 +363,14 @@ export const findUsersInMatch = async (userId) => {
 	return result.rows;
 };
   
-
+/// change name => username  ===> verif si on peu changer le username
 export const updateUserProfile = async (userId, updates) => {
 	const fieldsToUpdate = [];
 	const values = [];
-	if (updates.name) {
-		fieldsToUpdate.push("name = $" + (fieldsToUpdate.length + 1));
-		values.push(updates.name);
+
+	if (updates.username) {
+		fieldsToUpdate.push("username = $" + (fieldsToUpdate.length + 1));
+		values.push(updates.username);
 	}
 
 	const userWithNewEmail = await getUserByEmail(updates.email);

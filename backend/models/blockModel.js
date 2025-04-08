@@ -50,7 +50,7 @@ export const findUserBlocked = async (userId) => {
 	const query = `
     SELECT 
 		u.id, 
-		u.name, 
+		u.username, 
 		u.age, 
 		u.gender, 
 		u.bio, 

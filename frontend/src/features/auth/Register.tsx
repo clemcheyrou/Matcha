@@ -12,6 +12,8 @@ import { fetchUser } from "../../store/slice/authSlice.ts";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store.ts";
 
+//pas de provider detecte : null / pas token detecter
+//http://localhost:3000/undefined/api/auth/register 404 (
 export const Register = () => {
 	const { formData, errors, isFormValid, handleChange } = useForm();
 	const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +22,7 @@ export const Register = () => {
 	const [popupMessage, setPopupMessage] = useState("");
 	const [searchParams] = useSearchParams();
 	const [emailError, setEmailError] = useState(false);
+	const [usernameError, setUsernameError] = useState(false);
 	const dispatch = useDispatch<AppDispatch>();
 
 	const navigate = useNavigate();
@@ -31,19 +34,21 @@ export const Register = () => {
 
         if (urlParams) {
             const checkAuthentication = async () => {
-                    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/status`, {
-                        method: "GET",
-                        credentials: "include",
-                    });
+				const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/status`, {
+					method: "GET",
+					credentials: "include",
+				});
+				if (response.ok) {
+					const text = await response.text(); // Lire la réponse brute
 
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.authenticated) {
-                            navigate('/step1');
-                        } else {
-                            navigate('/register');
-                        }
-                    }
+					const data = JSON.parse(text); // Convertir en JSON si possible
+					if (data.authenticated) {
+						navigate('/step1');
+					} else {
+
+						navigate('/register');
+					}
+				}
 			};
             checkAuthentication();
 		}
@@ -51,10 +56,17 @@ export const Register = () => {
 
 	useEffect(() => {
 		const errorParam = searchParams.get("error");
+		console.log("Paramètre error détecté :", errorParam);
 		if (errorParam === "email_exists") {
+			console.log("Erreur : l'email existe déjà !");
 			setEmailError(true);
+		} 
+		else if (errorParam === "username_exists") {
+			console.log("Erreur : le pseudo existe déjà !");
+			setUsernameError(true);
 		} else {
 			setEmailError(false);
+			setUsernameError(false);
 		}
 	}, [searchParams]);
 
@@ -67,9 +79,15 @@ export const Register = () => {
 				setIsPopupVisible(true);
 				setEmailError(false);
 			} else if (response.message === "email_exists") {
+				console.log("L'email existe déjà !");
 				setEmailError(true);
 			}
+			else if (response.message === "username_exists") {
+				console.log("Le pseudo existe déjà !");
+				setUsernameError(true);
+			}
 		} catch (error) {
+			console.error("Erreur lors de l'inscription :", error);
 			console.error("error during registration:", error);
 			setPopupMessage("error try again");
 			setIsPopupVisible(true);
@@ -78,7 +96,6 @@ export const Register = () => {
 
 	useEffect(() => {
 		const token = searchParams.get("token");
-
 		if (token) {
 			const confirmEmail = async () => {
 				try {
@@ -89,9 +106,7 @@ export const Register = () => {
 							credentials: "include",
 						}
 					);
-
 					const data = await response.json();
-
 					if (data.success) {
 						await dispatch(fetchUser());
 						navigate("/step1");
@@ -154,6 +169,32 @@ export const Register = () => {
 							placeholder="Username"
 							className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 text-black"
 							value={formData.username}
+							onChange={handleChange}
+						/>
+					</div>
+					<div className="relative w-full">
+						<div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+							<LuUserRound className="text-gray-500" />
+						</div>
+						<input
+							type="text"
+							name="firstname"
+							placeholder="Firstname"
+							className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 text-black"
+							value={formData.firstname}
+							onChange={handleChange}
+						/>
+					</div>
+					<div className="relative w-full">
+						<div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+							<LuUserRound className="text-gray-500" />
+						</div>
+						<input
+							type="text"
+							name="lastname"
+							placeholder="Lastname"
+							className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 text-black"
+							value={formData.lastname}
 							onChange={handleChange}
 						/>
 					</div>
@@ -250,6 +291,18 @@ export const Register = () => {
 				{emailError && (
 					<p className="text-red-500 text-sm">
 						This email is already in use. Try another or{" "}
+						<Link
+							to="/login"
+							className="text-pink-500 font-bold hover:underline"
+						>
+							connect
+						</Link>
+						.
+					</p>
+				)}
+				{usernameError && (
+					<p className="text-red-500 text-sm">
+						This username is already in use. Try another or{" "}
 						<Link
 							to="/login"
 							className="text-pink-500 font-bold hover:underline"

@@ -28,13 +28,13 @@ export const App = () => {
 	return (
 		<Router>
 			<Routes>
-				<Route element={<AuthRoute />}>
-					<Route index element={<Home />} />
-					<Route path="/login" element={<Login />} />
-					<Route path="/register" element={<Register />} />
-					<Route path="/reset-password" element={<ResetPassword />} />		
-					<Route path="/forgot-password" element={<ForgotPassword />} />		
-				</Route>
+					<Route element={<AuthRoute />}>
+						<Route index element={<Home />} />
+						<Route path="/login" element={<Login />} />
+						<Route path="/register" element={<Register />} />
+						<Route path="/reset-password" element={<ResetPassword />} />		
+						<Route path="/forgot-password" element={<ForgotPassword />} />		
+					</Route>
 
 				<Route element={<PrivateRoute />}>
 				{/*<Route element={<OnboardingRoute />}>*/}

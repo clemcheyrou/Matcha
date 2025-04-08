@@ -1,7 +1,9 @@
 export type User = {
 	bio?: string;
 	id: number;
-	name?: string;
+	username?: string;
+	firstname?: string;
+	lastname?: string;
 	age?: number;
 	profile_photo: string;
 	gender?: string;

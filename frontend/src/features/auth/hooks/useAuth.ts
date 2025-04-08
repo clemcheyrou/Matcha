@@ -11,13 +11,17 @@ export const useAuth = () => {
 
 	const register = async (formData: {
 		username: string;
+		firstname: string;
+		lastname: string;
 		email: string;
 		password: string;
 	}) => {
 		try {
 			const response = await dispatch(
 				registerUser({
-					name: formData.username,
+					username: formData.username,
+					firstname: formData.firstname,
+					lastname: formData.lastname, 
 					email: formData.email,
 					password: formData.password,
 				})
@@ -30,16 +34,19 @@ export const useAuth = () => {
 	};
 
 	const login = async (formData: {
-		email: string;
+		username: string;
 		password: string;
 	}) => {
+		console.log("Username:", formData.username);
+		console.log("Password:", formData.password);
 		try {
 			const response = await dispatch(
 				loginUser({
-					email: formData.email,
+					username: formData.username,
 					password: formData.password,
 				})
 			).unwrap();
+			console.log("Login successful, response:", response);
 			return response;
 		} catch (err) {
 			console.error("error login user:", err);

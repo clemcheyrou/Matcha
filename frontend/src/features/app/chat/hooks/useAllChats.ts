@@ -3,7 +3,7 @@ import socket from "../../../../service/socket";
 
 type Chat = {
 	id: number;
-	name: string;
+	username: string;
 	user_id_1: number;
 	user_id_2: number;
 	audio_path: string;

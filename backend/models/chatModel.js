@@ -25,8 +25,8 @@ export const addNewChat = async (userId1, userId2) => {
 export const getAllChats = async (userId) => {
 	const query = `
 		SELECT chat.*,
-			u1.name AS user_1_name,
-			u2.name AS user_2_name,
+			u1.username AS user_1_name,
+			u2.username AS user_2_name,
 			p1.url AS user_1_profile_photo,
 			p2.url AS user_2_profile_photo,
 			CASE 
@@ -64,8 +64,8 @@ export const getAllChats = async (userId) => {
 export const getChatInfo = async (chatId) => {
 	const query = `
 	  SELECT chat.*,
-		u1.name AS user_1_name,
-		u2.name AS user_2_name,
+		u1.username AS user_1_name,
+		u2.username AS user_2_name,
 		p1.url AS user_1_profile_photo,
 		p2.url AS user_2_profile_photo,
 		u1.is_connected AS user_1_connected,
@@ -88,7 +88,7 @@ export const getAllMessagesFromChat = async (chatId) => {
 	const query = `
 		SELECT 
 			m.*,
-			u.name AS author_name
+			u.username AS author_name
 		FROM message m
 		JOIN users u ON m.author_id = u.id
 		WHERE m.conversation_id = $1

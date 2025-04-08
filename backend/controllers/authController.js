@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { getUserByEmail, createUser, updateUserVerification } from "../models/userModel.js";
+import { getUserByEmail, createUser, updateUserVerification, getUserByUsername } from "../models/userModel.js";
 import { generateToken, verifyToken } from "../utils/token.js";
 import { sendConfirmationEmail, sendResetPasswordEmail } from "../utils/emailSender.js";
 import { updateUserPassword } from "../models/authModel.js";
@@ -7,17 +7,23 @@ import pool from "../utils/db.js";
 import { io, users } from "../index.js";
 
 export const register = async (req, res) => {
-	const { name, email, password } = req.body;
+	const { username, lastname, firstname, email, password } = req.body;
+    console.log("BACK = Données reçues :", req.body);
 
 	try {
-		if (!name || !email || !password)
+		if (!lastname || !firstname || !username || !email || !password)
 			return res.status(400).json({ message: "all fields are required." });
-		const user = await getUserByEmail(email);
+		const user = await getUserByEmail(email); 
 		if (user)
             return res.status(409).json({ message: "email_exists" });
-		const hashedPassword = await bcrypt.hash(password, 10);
+		const pseudo = await getUserByUsername(username);
+        if (pseudo)
+            return res.status(409).json({ message: "username_exists" });
+        const hashedPassword = await bcrypt.hash(password, 10);
 		const userId = await createUser(
-			name,
+			username,
+			lastname,
+			firstname,
 			email,
 			hashedPassword,
 		);
@@ -45,30 +51,29 @@ export const handleEmailConfirmation = async (req, res) => {
     }
 };
 
-
 export const login = async (req, res) => {
-	const { email, password } = req.body;
+    const { username, password } = req.body;
+    try {
+        const user = await getUserByUsername(username);
+        
+        if (!user)
+            return res
+                .status(400)
+                .json({ message: "incorrect username or password" });
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch)
+            return res
+                .status(400)
+                .json({ message: "incorrect username or password" });
 
-	try {
-		const user = await getUserByEmail(email);
-		if (!user)
-			return res
-				.status(400)
-				.json({ message: "incorrect email or password" });
-
-		const passwordMatch = await bcrypt.compare(password, user.password);
-		if (!passwordMatch)
-			return res
-				.status(400)
-				.json({ message: "incorrect email or password" });
-
-		req.session.userId = user.id;
-		res.status(200).json({ success: true, message: "successful connection" });
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ message: "server error" });
-	}
+        req.session.userId = user.id;
+        res.status(200).json({ success: true, message: "successful connection" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "server error" });
+    }
 };
+
 
 export const logout = async (req, res) => {
 	const userId = req.session.userId;

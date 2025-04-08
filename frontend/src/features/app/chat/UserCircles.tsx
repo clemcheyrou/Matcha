@@ -16,7 +16,7 @@ export const UserCircles: React.FC = () => {
           <div className="w-16 h-16 rounded-full overflow-hidden cursor-pointer" onClick={() => createChat(user.id)}>
             <img
               src={`${process.env.REACT_APP_API_URL}${user.profile_photo}`}
-              alt={user.name}
+              alt={user.username}
               className="w-full h-full object-cover"
             />
           </div>

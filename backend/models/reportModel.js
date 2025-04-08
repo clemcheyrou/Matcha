@@ -27,7 +27,9 @@ export const findUserReported = async (userId) => {
 	const query = `
     SELECT 
 		u.id, 
-		u.name, 
+		u.username,
+		u.firstname, 
+		u.lastname, 
 		u.age, 
 		u.gender, 
 		u.bio, 

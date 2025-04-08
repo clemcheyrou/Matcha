@@ -1,10 +1,11 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    -- username VARCHAR(100) UNIQUE NOT NULL,
+    lastname VARCHAR(100) NOT NULL,
+    firstname VARCHAR(100) NOT NULL,
+    username VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(100),
-    age INT,
+    age INT CHECK (age >= 18),
     gender VARCHAR(10),
     bio TEXT,
     interests TEXT[],
@@ -86,14 +87,14 @@ CREATE TABLE IF NOT EXISTS matches (
 CREATE INDEX idx_likes_user_liked_user ON likes (user_id, liked_user_id);
 CREATE INDEX idx_matches_user1_user2 ON matches (user_1_id, user_2_id);
 
-INSERT INTO users (name, email, password, age, gender, bio, interests, auth_type, oauth_token, orientation)
+INSERT INTO users (username, firstname, lastname, email, password, age, gender, bio, interests, auth_type, oauth_token, orientation)
 VALUES 
-    ('Alice', 'alice@example.com', 'password123', 25, 'Woman', 'test bio', ARRAY['Vegan', 'Fitness', 'Travel'], 'local', NULL, 1),
-    ('Bob', 'bob@example.com', 'password456', 30, 'Man', 'test bio', ARRAY['Books', 'Art', 'Piercing'], 'local', NULL, 2),
-    ('Charlie', 'charlie@example.com', NULL, 28, 'Woman', 'test bio', ARRAY['Music', 'Gaming', 'Travel'], 'google', 'oauth_token_example', 3),
-    ('David', 'david@example.com', NULL, 35, 'Man', 'test bio', ARRAY['Movies', 'Fitness'], 'facebook', 'oauth_token_example2', 1),
-    ('Emma', 'emma@example.com', NULL, 29, 'Woman', 'test bio', ARRAY['Movies'], 'apple', 'oauth_token_example3', 2)
-ON CONFLICT (email) DO NOTHING;
+    ('alice123','Alice', 'Dupont', 'alice@example.com', 'password123', 25, 'Woman', 'test bio', ARRAY['Vegan', 'Fitness', 'Travel'], 'local', NULL, 1),
+    ('Bob21', 'Bob', 'Martin','bob@example.com', 'password456', 30, 'Man', 'test bio', ARRAY['Books', 'Art', 'Piercing'], 'local', NULL, 2),
+    ('Charlie5', 'Charlie', 'Bordereau','charlie@example.com', NULL, 28, 'Woman', 'test bio', ARRAY['Music', 'Gaming', 'Travel'], 'google', 'oauth_token_example', 3),
+    ('David90','David', 'Herman','david@example.com', NULL, 35, 'Man', 'test bio', ARRAY['Movies', 'Fitness'], 'facebook', 'oauth_token_example2', 1),
+    ('Emma67','Emma', 'Laurent','emma@example.com', NULL, 29, 'Woman', 'test bio', ARRAY['Movies'], 'apple', 'oauth_token_example3', 2)
+ON CONFLICT DO NOTHING;
 
 INSERT INTO photos (url, type)
 VALUES

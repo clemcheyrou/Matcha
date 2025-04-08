@@ -17,7 +17,7 @@ export const getProfileViews = async (userId) => {
             pv.id, 
             pv.viewer_id, 
             pv.created_at,
-            u.name AS viewer_name
+            u.username AS viewer_name
         FROM 
             profile_views pv
         JOIN 

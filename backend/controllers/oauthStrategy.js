@@ -4,6 +4,7 @@ import {
 	getUserByEmail,
 	getUserById,
 } from "../models/userModel.js";
+import {getUserByUsername} from "../models/userModel.js"
 
 export const createOAuthStrategy = (Strategy, provider, options) => {
 	passport.use(
@@ -13,14 +14,34 @@ export const createOAuthStrategy = (Strategy, provider, options) => {
 				const email = profile.emails ? profile.emails[0]?.value : null;
 				if (!email) return done(new Error("email not available"), null);
 
+				let firstname = "";
+				let lastname = "";
+
+				if (profile.name) {
+					firstname = profile.name.givenName || "";
+					lastname = profile.name.familyName || "";
+				} else if (profile.displayName) {
+					const nameParts = profile.displayName.split(" ");
+					firstname = nameParts[0] || "";
+					lastname = nameParts.slice(1).join(" ") || "Unknown";
+				}
+
+				if (!firstname) firstname = "User";
+				if (!lastname) lastname = "Unknown";
+
+				const baseUsername = `${firstname}.${lastname}`.toLowerCase();
+				const username = await generateUniqueUsername(baseUsername);
+
 				if (process.env.USE_DATABASE === "true") {
 					const user = await getUserByEmail(email);
 
 					if (!user) {
 						console.log("user not found...");
 						const newUser = await createUserSocial(
-							profile.displayName,
+							username,
 							email,
+							firstname,
+							lastname,
 							provider
 						);
 						return done(null, { id: newUser.id, accessToken: access_token, profile });
@@ -52,4 +73,17 @@ export const createOAuthStrategy = (Strategy, provider, options) => {
 			done(err);
 		}
 	});
+};
+
+const generateUniqueUsername = async (baseUsername) => {
+	let username = baseUsername.toLowerCase().replace(/\s+/g, '');
+	let suffix = 0;
+	let finalUsername = username;
+
+	while (await getUserByUsername(finalUsername)) {
+		suffix++;
+		finalUsername = `${username}${suffix}`;
+	}
+
+	return finalUsername;
 };

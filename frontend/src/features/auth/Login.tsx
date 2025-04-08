@@ -53,10 +53,10 @@ export const Login = () => {
 						</div>
 						<input
 							type="text"
-							id="email"
-							name="email"
-							placeholder="Email"
-							value={formData.email}
+							id="username"
+							name="username"
+							placeholder="Username"
+							value={formData.username}
 							onChange={handleChange}
 							className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 text-black"
 						/>

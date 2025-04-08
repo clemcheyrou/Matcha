@@ -99,7 +99,7 @@ export const Profil = () => {
           <div className="p-2">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="text-3xl font-bold font-agbalumo">{userData.name}</h2>
+                <h2 className="text-3xl font-bold font-agbalumo">{userData.username}</h2>
                 <p className="text-lg text-gray-500">{userData.age} years</p>
               </div>
               <div className="flex items-center">

@@ -16,7 +16,7 @@ export const viewHandler = (socket) => {
 			console.error("error profile view:", error);
         }
 		const user = await getUserById(userId);
-		const name = user.name;
+		const name = user.username;
 		
 		await createNotification(viewedUserId, 'view', userId, `${name} see your profile!`);
 		socket.to(viewedUserSocketId).emit('notification', formatNotification(`${name} see your profile`, userId, 'view'))

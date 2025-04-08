@@ -32,7 +32,7 @@ export const useCreateChat = () => {
 		socket.off('chatAlreadyExists', handleChatAlreadyExists);
 		socket.off('error', handleError);
 	};
-	}, [navigate, socket]);
+	}, [navigate]);
 
   return { createChat };
 };
