@@ -99,7 +99,8 @@ export const Profil = () => {
           <div className="p-2">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="text-3xl font-bold font-agbalumo">{userData.username}</h2>
+                <h2 className="text-3xl font-bold font-agbalumo">{userData.username && userData.username.length > 15 ? userData.username.slice(0, 15) + '...' : userData.username}</h2>
+                <p className="text-xs text-gray-500 mt-0">{userData.firstname} {userData.lastname} <span className="text-white">({userData.gender} {userData.orientation === 0 ? 'Heterosexual' : userData.orientation === 1 ? 'Homosexual' : 'Bisexual'})</span></p>
                 <p className="text-lg text-gray-500">{userData.age} years</p>
               </div>
               <div className="flex items-center">
@@ -109,7 +110,7 @@ export const Profil = () => {
 
             {userData.interests && userData.interests.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Interest</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Tags</h3>
                 <div className="flex flex-wrap gap-2">
                   {userData.interests.map((tag, index) => (
                     <span key={index} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm capitalize">

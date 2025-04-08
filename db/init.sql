@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_connected_at TIMESTAMP,
     auth_type VARCHAR(20) DEFAULT 'local',
     oauth_token TEXT,
-    orientation INTEGER,
+    orientation INTEGER CHECK (orientation IN (0, 1, 2)),
     profile_photo_id INTEGER,
 	location BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -91,7 +91,7 @@ INSERT INTO users (username, firstname, lastname, email, password, age, gender, 
 VALUES 
     ('alice123','Alice', 'Dupont', 'alice@example.com', 'password123', 25, 'Woman', 'test bio', ARRAY['Vegan', 'Fitness', 'Travel'], 'local', NULL, 1),
     ('Bob21', 'Bob', 'Martin','bob@example.com', 'password456', 30, 'Man', 'test bio', ARRAY['Books', 'Art', 'Piercing'], 'local', NULL, 2),
-    ('Charlie5', 'Charlie', 'Bordereau','charlie@example.com', NULL, 28, 'Woman', 'test bio', ARRAY['Music', 'Gaming', 'Travel'], 'google', 'oauth_token_example', 3),
+    ('Charlie5', 'Charlie', 'Bordereau','charlie@example.com', NULL, 28, 'Woman', 'test bio', ARRAY['Music', 'Gaming', 'Travel'], 'google', 'oauth_token_example', 0),
     ('David90','David', 'Herman','david@example.com', NULL, 35, 'Man', 'test bio', ARRAY['Movies', 'Fitness'], 'facebook', 'oauth_token_example2', 1),
     ('Emma67','Emma', 'Laurent','emma@example.com', NULL, 29, 'Woman', 'test bio', ARRAY['Movies'], 'apple', 'oauth_token_example3', 2)
 ON CONFLICT DO NOTHING;

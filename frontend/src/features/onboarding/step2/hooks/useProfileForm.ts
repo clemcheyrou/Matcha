@@ -43,7 +43,7 @@ export const useProfileForm = () => {
         if (response.ok) {
           navigate("/step3");
         } else {
-          setMessage("an error occurred while saving your data");
+          setMessage("incorrect data");
         }
       } catch (error) {
         setMessage("server error");

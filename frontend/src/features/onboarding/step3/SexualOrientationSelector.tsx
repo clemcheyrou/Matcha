@@ -9,8 +9,8 @@ export const SexualOrientationSelector = () => {
 	const navigate = useNavigate();
 
 	const images = [
-		"Man",
-		"Woman",
+		"Heterosexual",
+		"Homosexual",
 		"Everybody",
 	];
 

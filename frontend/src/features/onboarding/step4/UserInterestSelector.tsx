@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { BreadcrumbSteps } from "../BreadcrumbSteps.tsx";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -48,7 +48,11 @@ export const UserInterestSelector = () => {
 		);
 	};
 
-	const handleSubmit = async () => {
+	const handleSubmit = async (e: FormEvent) => {
+		if (isNextDisabled) {
+			e.preventDefault();
+			return;
+		};
 		try {
 			const response = await fetch(
 				`${process.env.REACT_APP_API_URL}/api/users/save-interests`,
@@ -71,6 +75,7 @@ export const UserInterestSelector = () => {
 		}
 	};
 
+	const isNextDisabled = selectedInterests.length === 0;
 	return (
 		<div className="mb-16 h-screen w-screen text-white px-6 md:px-28 lg:px-96 pb-16">
 			<div className="mt-12">
@@ -91,7 +96,11 @@ export const UserInterestSelector = () => {
 				<div className="mt-4">
 					<button
 						onClick={handleSubmit}
-						className="w-full text-center space-x-4 font-agbalumo text-black rounded-md px-4 py-2 mt-6 bg-pink text-white cursor-pointer hover:bg-white hover:text-pink-500 mt-16"
+						className={`w-full text-center space-x-4 font-agbalumo text-black rounded-md px-4 py-2 mt-6 text-white cursor-pointer mt-16
+							${isNextDisabled
+								? "bg-gray-400 text-gray-700 cursor-not-allowed"
+								: "bg-pink text-white cursor-pointer hover:bg-white hover:text-pink"
+							} mt-16`}
 					>
 						Next
 					</button>

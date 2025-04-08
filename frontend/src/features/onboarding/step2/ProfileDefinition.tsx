@@ -51,8 +51,8 @@ export const ProfileDefinition = () => {
           <div className="mt-36">
             <button
               onClick={handleSubmit}
-              disabled={isNextDisabled}
-              className={`w-full px-4 font-agbalumo py-2 bg-pink text-white rounded-md ${isNextDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isNextDisabled || bio.length === 0}
+              className={`w-full px-4 font-agbalumo py-2 bg-pink text-white rounded-md ${isNextDisabled || bio.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               Next
             </button>

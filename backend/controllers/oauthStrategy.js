@@ -26,8 +26,8 @@ export const createOAuthStrategy = (Strategy, provider, options) => {
 					lastname = nameParts.slice(1).join(" ") || "Unknown";
 				}
 
-				if (!firstname) firstname = "User";
-				if (!lastname) lastname = "Unknown";
+				if (!firstname) firstname = profile.displayName;
+				if (!lastname) lastname = profile.displayName;
 
 				const baseUsername = `${firstname}.${lastname}`.toLowerCase();
 				const username = await generateUniqueUsername(baseUsername);
@@ -36,7 +36,6 @@ export const createOAuthStrategy = (Strategy, provider, options) => {
 					const user = await getUserByEmail(email);
 
 					if (!user) {
-						console.log("user not found...");
 						const newUser = await createUserSocial(
 							username,
 							email,
@@ -46,7 +45,6 @@ export const createOAuthStrategy = (Strategy, provider, options) => {
 						);
 						return done(null, { id: newUser.id, accessToken: access_token, profile });
 					} else {
-						console.log("user already exists, authenticating...");
 						return done(null, { id: user.id, accessToken: access_token, profile });
 					}
 				}

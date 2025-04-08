@@ -287,9 +287,9 @@ export const Settings: React.FC = () => {
 						</div>
 						<button
 							type="submit"
-							disabled={loading || interests.length < 1}
+							disabled={loading || interests.length < 1 || biography.length === 0}
 							className={`w-full py-2 rounded-md transition ${
-								interests.length < 1 || loading
+								interests.length < 1 || biography.length === 0 || loading
 									? "bg-gray-400 cursor-not-allowed"
 									: "bg-pink text-white hover:bg-pink-600"
 							}`}						

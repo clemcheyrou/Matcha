@@ -135,35 +135,37 @@ export const UserProfile = () => {
 
 					<div className="p-2">
 						<div className="flex justify-between items-center mb-4">
-							<div>
-								<div className="flex justif-content items-center">
-									<h2 className="text-3xl font-bold font-agbalumo mt-0 mr-4">{userData.username}</h2>
-									<div
-										className={`h-2 w-2 rounded mr-2 mt-2 ${
-											userData.is_connected
-												? "bg-green-500"
-												: "bg-red-500"
-										}`}
-									/>
-									{userData.last_connected_at && !userData.is_connected && <p className="mt-2 text-[12px]">{lastConnection(userData.last_connected_at)}</p>}
+							<div className="w-full">
+								<div className="flex justify-between items-center w-full">
+									<div className="flex justif-content items-center">
+										<h2 className="text-3xl font-bold font-agbalumo mt-0 mr-4">{userData.username}</h2>
+										<div
+											className={`h-2 w-2 rounded mr-2 mt-2 ${
+												userData.is_connected
+													? "bg-green-500"
+													: "bg-red-500"
+											}`}
+										/>
+										{userData.last_connected_at && !userData.is_connected && <p className="mt-2 text-[12px]">{lastConnection(userData.last_connected_at)}</p>}
+									</div>
+									<div className="flex items-center justify-between">
+										{userData.distance_km && userData.distance_km >= 0 &&
+											<div className="bg-bg p-1 rounded-md">
+												{userData.distance_km === 0 ? '0 km' : userData.distance_km.toFixed(1)} km
+											</div>
+										}
+										<div className="flex items-center gap-1 px-3 rounded-full">
+											<span className="font-medium text-pink-700">🔥 {userData.fame_count}</span>
+										</div>
+									</div>
 								</div>
+								<p className="text-xs text-gray-500 mt-0">{userData.firstname} {userData.lastname} <span className="text-white">({userData.gender} {userData.orientation === 0 ? 'Heterosexual' : userData.orientation === 1 ? 'Homosexual' : 'Bisexual'})</span></p>
 								<p className="text-lg text-gray-500">{userData.age} years</p>
 							</div>
-							<div className="flex">
-								{userData.distance_km && userData.distance_km >= 0 &&
-									<div className="bg-bg p-1 rounded-md">
-										{userData.distance_km === 0 ? '0' : userData.distance_km.toFixed(1)} km
-									</div>
-								}
-								<div className="flex items-center gap-1 px-3 py-1 rounded-full">
-									<span className="font-medium text-pink-700">🔥 {userData.fame_count}</span>
-								</div>
-							</div>
 						</div>
-
 						{userData.interests && userData.interests.length > 0 && (
 							<div className="mb-6">
-								<h3 className="text-sm font-medium text-gray-500 mb-2">Interest</h3>
+								<h3 className="text-sm font-medium text-gray-500 mb-2">Tags</h3>
 								<div className="flex flex-wrap gap-2">
 									{userData.interests.map((tag, index) => (
 										<span key={index} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm capitalize">
