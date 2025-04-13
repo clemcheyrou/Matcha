@@ -1,9 +1,6 @@
-import React, { FormEvent, useState } from "react";
+import React from "react";
 import { BreadcrumbSteps } from "../BreadcrumbSteps.tsx";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../../store/store.ts";
-import { fetchUser } from "../../../store/slice/authSlice.ts";
+import { useUserInterests } from "./hooks/useUserInterests.ts";
 
 const interestsList = [
 	"Vegan",
@@ -35,46 +32,14 @@ const Tag = ({ interest, isSelected, toggleInterest }) => (
 export const UserInterestSelector = () => {
 	const steps = ["Images", "Identity", "Orientation", "Interest"];
 	const currentStep = 4;
-	const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-	const navigate = useNavigate();
-	const dispatch = useDispatch<AppDispatch>();
 
-	const toggleInterest = (interest: any) => {
-		setSelectedInterests((prev: any[]) =>
-			prev.includes(interest)
-				? prev.filter((i: any) => i !== interest)
-				: [...prev, interest]
-		);
-	};
+	const {
+		selectedInterests,
+		toggleInterest,
+		handleSubmit,
+		isNextDisabled,
+	} = useUserInterests();
 
-	const handleSubmit = async (e: FormEvent) => {
-		if (isNextDisabled) {
-			e.preventDefault();
-			return;
-		};
-		try {
-			const response = await fetch(
-				`${process.env.REACT_APP_API_URL}/api/users/save-interests`,
-				{
-					method: "PATCH",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ interests: selectedInterests }),
-					credentials: "include",
-				}
-			);
-
-			if (response.ok) {
-				await dispatch(fetchUser());
-				navigate("/home");
-			} else {
-				console.error("error");
-			}
-		} catch (error) {
-			console.error("error servor", error);
-		}
-	};
-
-	const isNextDisabled = selectedInterests.length === 0;
 	return (
 		<div className="mb-16 h-screen w-screen text-white px-6 md:px-28 lg:px-96 pb-16">
 			<div className="mt-12">

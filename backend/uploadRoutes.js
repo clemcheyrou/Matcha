@@ -106,6 +106,11 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
   try {
     https.get(imageUrl, (imageResponse) => {
       const chunks = [];
+	  const contentType = imageResponse.headers['content-type'];
+		if (!['image/jpeg', 'image/png', 'image/gif'].includes(contentType)) {
+		  console.warn(`type MIME invalide (${contentType})`);
+		  return res.status(400).json({ message: 'type d\'image non autorisé.' });
+		}
       imageResponse.on('data', (chunk) => {
         chunks.push(chunk);
       });

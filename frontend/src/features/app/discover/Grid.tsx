@@ -123,7 +123,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 										</div>
 									)}
 	
-									{user.distance_km >= 0 && (
+									{user.distance_km && user.distance_km >= 0 && (
 										<div className="flex space-x-1 align-content items-center absolute top-3 left-2 h-6 p-1 text-white text-xs rounded">
 											<div className="bg-bg p-1 rounded-md">
 												{user.distance_km === 0 ? '0' : user.distance_km.toFixed(1)} km

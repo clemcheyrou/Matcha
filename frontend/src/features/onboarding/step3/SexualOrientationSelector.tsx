@@ -1,49 +1,17 @@
 import React, { useState } from "react";
 import { BreadcrumbSteps } from "../BreadcrumbSteps.tsx";
-import { useNavigate } from "react-router-dom";
+import { useSexualOrientation } from "./hooks/useSexualOrientation.ts";
 
 export const SexualOrientationSelector = () => {
-	const [selectedImage, setSelectedImage] = useState<number>(1);
 	const steps = ["Images", "Identity", "Orientation", "Interest"];
 	const currentStep = 3;
-	const navigate = useNavigate();
+	const { handleSubmit, selectedImage, handleImageClick } = useSexualOrientation();
 
 	const images = [
 		"Heterosexual",
 		"Homosexual",
 		"Everybody",
 	];
-
-	const handleImageClick = (index: number) => {
-		setSelectedImage(index);
-	};
-
-	const handleSubmit = async () => {
-		try {
-			const response = await fetch(
-				`${process.env.REACT_APP_API_URL}/api/users/save-orientation`,
-				{
-					method: "PATCH",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						orientation: selectedImage,
-					}),
-					credentials: "include",
-				}
-			);
-
-			if (response.ok) {
-				navigate("/step4");
-			} else {
-				console.error("error");
-			}
-		} catch (error) {
-			console.error("error servor", error);
-		}
-	};
-
 	return (
 		<div className="mb-16 h-screen w-screen text-white px-6 md:px-28 lg:px-96 pb-16">
 			<div className="mt-12">

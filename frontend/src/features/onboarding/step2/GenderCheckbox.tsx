@@ -1,10 +1,7 @@
 import React from "react";
+import { GenderProps } from "./type/type";
 
-type Props = {
-	selected: string;
-	setSelected: React.Dispatch<React.SetStateAction<string>>;
-};
-export const GenderCheckbox: React.FC<Props> = ({ selected, setSelected }) => {
+export const GenderCheckbox: React.FC<GenderProps> = ({ selected, setSelected }) => {
 	return (
 		<div className="space-y-4 mt-6">
 			<label className="flex items-center space-x-2 cursor-pointer">

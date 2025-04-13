@@ -412,8 +412,17 @@ export const findUsersInMatch = async (userId) => {
 	const result = await pool.query(query, [userId]);
 	return result.rows;
 };
-  
-/// change name => username  ===> verif si on peu changer le username
+ 
+
+const sanitize = (str) => {
+	return String(str)
+	  .replace(/&/g, "&amp;")
+	  .replace(/</g, "&lt;")
+	  .replace(/>/g, "&gt;")
+	  .replace(/"/g, "&quot;")
+	  .replace(/'/g, "&#039;");
+};
+
 export const updateUserProfile = async (userId, updates) => {
 	const fieldsToUpdate = [];
 	const values = [];
@@ -451,8 +460,9 @@ export const updateUserProfile = async (userId, updates) => {
 		values.push(updates.gender);
 	}
 	if (updates.biography) {
+		const sanitizedBio = sanitize(req.body.bio || "");
 		fieldsToUpdate.push("bio = $" + (fieldsToUpdate.length + 1));
-		values.push(updates.biography);
+		values.push(sanitizedBio);
 	}
 	if (updates.location) {
 		fieldsToUpdate.push("location = $" + (fieldsToUpdate.length + 1));

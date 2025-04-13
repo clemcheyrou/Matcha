@@ -33,6 +33,15 @@ const TABS = [
 	{ value: 2, label: "Bisexual" },
 ];
 
+const sanitizeBio = (input: string): string => {
+	return input
+	  .replace(/&/g, "&amp;")
+	  .replace(/</g, "&lt;")
+	  .replace(/>/g, "&gt;")
+	  .replace(/"/g, "&quot;")
+	  .replace(/'/g, "&#039;");
+};  
+
 export const Settings: React.FC = () => {
 	const dispatch = useDispatch<AppDispatch>();
 	const user = useSelector((state: RootState) => state.auth.user);
@@ -126,7 +135,7 @@ export const Settings: React.FC = () => {
 					gender,
 					age,
 					sexualPreference,
-					biography,
+					biography: sanitizeBio(biography),
 					interests,
 					profilePicture: photoUrl,
 				};
@@ -140,7 +149,7 @@ export const Settings: React.FC = () => {
 					gender,
 					age,
 					sexualPreference,
-					biography,
+					biography: sanitizeBio(biography),
 					interests,
 				};
 				await dispatch(updateUserProfile(profileData)).unwrap();
@@ -201,7 +210,7 @@ export const Settings: React.FC = () => {
 							required
 							className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300 text-black"
 						/>
-						{ user && user.auth_type == 'local' &&
+						{ user && user.auth_type === 'local' &&
 							<input
 								type="email"
 								value={email}

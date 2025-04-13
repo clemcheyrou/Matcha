@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const sanitizeInput = (input: string) => {
+  return input
+    .replace(/<script.*?>.*?<\/script>/gi, "")
+    .replace(/<\/?[^>]+(>|$)/g, "")
+    .trim();
+};
+
 export const useProfileForm = () => {
   const [selected, setSelected] = useState<string>("");
   const [bio, setBio] = useState<string>("");
@@ -9,11 +16,13 @@ export const useProfileForm = () => {
   const navigate = useNavigate();
 
   const handleAgeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setAge(event.target.value);
+    const sanitized = sanitizeInput(event.target.value);
+    setAge(sanitized);
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setBio(event.target.value);
+    const sanitized = sanitizeInput(event.target.value);
+    setBio(sanitized);
   };
 
   const handleSubmit = async () => {
@@ -23,6 +32,7 @@ export const useProfileForm = () => {
         setMessage("please enter a valid age.");
         return;
       }
+
       try {
         const response = await fetch(
           `${process.env.REACT_APP_API_URL}/api/users/save-gender-bio`,
@@ -32,8 +42,8 @@ export const useProfileForm = () => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              gender: selected,
-              bio: bio,
+              gender: sanitizeInput(selected),
+              bio: sanitizeInput(bio),
               age: parsedAge,
             }),
             credentials: "include",

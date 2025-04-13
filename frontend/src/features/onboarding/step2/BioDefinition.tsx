@@ -1,11 +1,7 @@
 import React from 'react'
+import { BioProps } from './type/type'
 
-type Props = {
-	bio: string;
-	handleChange: any;
-}
-
-export const BioDefinition: React.FC<Props> = ({bio, handleChange}) => {
+export const BioDefinition: React.FC<BioProps> = ({bio, handleChange}) => {
   return (
 	<div className="mt-4">
 		<h2>Bio</h2>
