@@ -2,8 +2,10 @@ import {
 	getUserById,
 	findUsersByPreference,
 	findUsersInMatch,
+	findDefaultUsers,
 	getAllLikes,
 } from "../models/userModel.js";
+import pool from "../utils/db.js";
 
 export const discoverNewUsers = async (req, res) => {
 	const userId = req.session.userId;

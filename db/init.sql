@@ -189,3 +189,9 @@ CREATE TABLE user_events (
   invitation_status VARCHAR(50) DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS user_connections (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    connected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
