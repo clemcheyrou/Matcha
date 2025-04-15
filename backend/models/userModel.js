@@ -98,7 +98,7 @@ export const findUsersByPreference = async (userId, filters) => {
 	for (const user of users.rows) {
 		const fame = await getFameRating(user.id, pool);
 		await pool.query('UPDATE users SET fame_rating = $1 WHERE id = $2', [fame, user.id]);
-		console.log(`👤 Utilisateur ID: ${user.id} → Fame Rating: ${fame}`);
+		//console.log(`👤 Utilisateur ID: ${user.id} → Fame Rating: ${fame}`);
 	}
 
     let orderByClause = "";
@@ -229,7 +229,7 @@ export const findUsersByPreference = async (userId, filters) => {
         WHERE ${conditions.join(" AND ")}
     `;
 
-    if (filters.sortBy) {
+    if (filters.sortBy != "pertinent") {
         if (filters.sortBy === "tag" && filters.tags.length > 0) {
 			orderByClause = `
 				ORDER BY (
@@ -250,12 +250,17 @@ export const findUsersByPreference = async (userId, filters) => {
         } else if (filters.sortBy === "popDesc") {
             orderByClause = "ORDER BY fame_count DESC";
         }
+		query += orderByClause;
+
+		const result = await pool.query(query, values);
+		return result.rows;
     }
+
 	const isNoFiltersApplied = 
     (filters.ageRange[0] === 0 && filters.ageRange[1] === 100) &&
     (filters.locationRange[0] === 0 && filters.locationRange[1] === 1000) &&
     (filters.fameRange[0] === 0 && filters.fameRange[1] === 100) &&
-    (!filters.tags || filters.tags.length === 0);
+    (!filters.tags || filters.tags.length === 0) && filters.sortBy === "pertinent";
 
 	if (isNoFiltersApplied) {
 		console.log("🚨 Aucun filtre actif – appel à findDefaultUsers");
@@ -292,8 +297,6 @@ const getFameRating = async (userId, pool) => {
 
     return Math.round(normalized);
 };
-
-
 
 export const findDefaultUsers = async (userId, pool, filters) => {
     try {
@@ -392,16 +395,65 @@ export const findDefaultUsers = async (userId, pool, filters) => {
 
 		const result = await pool.query(query, values);
 		
-		result.rows.forEach(user => {
-			console.log(`👤 Utilisateur - ID: ${user.id}, Username: ${user.username}, Genre: ${user.gender}, Orientation: ${user.orientation}`);
-		});
+		const profilesWithSharedTags = await addSharedTagsScore(userId, result.rows, pool);
 		
-        return result;
+		profilesWithSharedTags.forEach(user => {
+			console.log(`👤 Utilisateur - ID: ${user.id}, Username: ${user.username}`);
+			console.log(`   → Tags en commun: ${user.sharedTagCount} [${user.sharedTags.join(", ")}]`);
+			console.log('---');
+		});
+
+		if (profilesWithSharedTags.length === 0) {
+            return res.status(404).json({ message: 'Aucun match trouvé avec les tags communs' });
+        }
+
+		
+		
+        return profilesWithSharedTags;
     } catch (error) {
         console.error('Erreur lors de la récupération des matchs:', error);
         return [];
     }
 };
+
+
+export const addSharedTagsScore = async (userId, users, pool) => {
+	try {
+		const currentUserInterestsResult = await pool.query(
+			'SELECT interests FROM users WHERE id = $1',
+			[userId]
+		);
+		const currentUserTags = currentUserInterestsResult.rows[0]?.interests || [];
+
+		const enrichedUsers = users.map(user => {
+
+			const userTags = user.interests || [];
+			const sharedTags = userTags.filter(tag => currentUserTags.includes(tag));
+
+			const sharedTagCount = sharedTags.length;
+
+			// On retourne un nouvel objet utilisateur enrichi avec :
+			// - le tableau des tags en commun
+			// - le nombre total de tags en commun
+			return {
+				...user,
+				sharedTags,
+				sharedTagCount
+			};
+		});
+
+		// On trie les utilisateurs par nombre de tags communs (du plus élevé au plus faible)
+		enrichedUsers.sort((a, b) => b.sharedTagCount - a.sharedTagCount);
+
+		return enrichedUsers;
+
+	} catch (err) {
+		console.error("Erreur dans addSharedTagsScore:", err);
+		return users;
+	}
+};
+
+
 
 export const getAllUserPhotos = async (userId) => {
 	try {
