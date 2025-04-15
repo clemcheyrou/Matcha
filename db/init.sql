@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     orientation INTEGER CHECK (orientation IN (0, 1, 2)),
     profile_photo_id INTEGER,
 	location BOOLEAN DEFAULT FALSE,
+    fame_rating NUMERIC DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

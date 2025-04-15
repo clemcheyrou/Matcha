@@ -24,6 +24,14 @@ export const getUserByUsername = async (username) => {
 	return result.rows[0];
 };
 
+export const getFameRatingByUserId = async (userId) => {
+
+	const result = await pool.query('SELECT fame_rating FROM users WHERE id = $1', [
+		userId,
+	]);
+	return result.rows[0].fame_rating;
+} 
+
 export const updateUserVerification = async (userId) => {
 	const query = "UPDATE users SET is_verified = TRUE WHERE id = $1";
 	await pool.query(query, [userId]);
@@ -86,16 +94,11 @@ const getUserGender = async (userId) => {
 
 export const findUsersByPreference = async (userId, filters) => {
 
-	const isNoFiltersApplied = 
-    (filters.ageRange[0] === 0 && filters.ageRange[1] === 100) &&
-    (filters.locationRange[0] === 0 && filters.locationRange[1] === 1000) &&
-    (filters.fameRange[0] === 0 && filters.fameRange[1] === 100) &&
-    (!filters.tags || filters.tags.length === 0);
-
-	if (isNoFiltersApplied) {
-		console.log("🚨 Aucun filtre actif – appel à findDefaultUsers");
-		const matchs = await findDefaultUsers(userId, pool, filters);
-		return matchs;
+	const users = await pool.query('SELECT id FROM users');
+	for (const user of users.rows) {
+		const fame = await getFameRating(user.id, pool);
+		await pool.query('UPDATE users SET fame_rating = $1 WHERE id = $2', [fame, user.id]);
+		console.log(`👤 Utilisateur ID: ${user.id} → Fame Rating: ${fame}`);
 	}
 
     let orderByClause = "";
@@ -139,28 +142,11 @@ export const findUsersByPreference = async (userId, filters) => {
         paramIndex += 2;
     }
 
-    if (filters.fameRange && filters.fameRange.length === 2) {
-		const min = filters.fameRange[0];
-		const max = filters.fameRange[1];
-	
-		const filteredUsers = [];
-	
-		for (const user of userList) {
-			const fame = await getFameRating(user.id, pool);
-			console.log(`👤 Utilisateur ${user.username} → Fame: ${fame}`);
-	
-			if (fame >= min && fame <= max) {
-				filteredUsers.push(user);
-			}
-		}
-		// userList devient filtered
-		userList = filteredUsers;
-		
-
-		/////////////////////////deja la donc pas enlever
-		// values.push(filters.fameRange[0], filters.fameRange[1]);
-		// paramIndex += 2;
-    }
+	if (filters.fameRange && filters.fameRange.length === 2) {
+		conditions.push(`u.fame_rating BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
+		values.push(filters.fameRange[0], filters.fameRange[1]);
+		paramIndex += 2;
+	}
 
     if (filters.tags && filters.tags.length > 0) {
         const tagIndexStart = paramIndex;
@@ -265,6 +251,17 @@ export const findUsersByPreference = async (userId, filters) => {
             orderByClause = "ORDER BY fame_count DESC";
         }
     }
+	const isNoFiltersApplied = 
+    (filters.ageRange[0] === 0 && filters.ageRange[1] === 100) &&
+    (filters.locationRange[0] === 0 && filters.locationRange[1] === 1000) &&
+    (filters.fameRange[0] === 0 && filters.fameRange[1] === 100) &&
+    (!filters.tags || filters.tags.length === 0);
+
+	if (isNoFiltersApplied) {
+		console.log("🚨 Aucun filtre actif – appel à findDefaultUsers");
+		const matchs = await findDefaultUsers(userId, pool, filters);
+		return matchs;
+	}
 
     query += orderByClause;
 
@@ -274,11 +271,11 @@ export const findUsersByPreference = async (userId, filters) => {
 
 const getFameRating = async (userId, pool) => {
 
-    const [viewsResult] = await pool.query('SELECT COUNT(*) AS views FROM profile_views WHERE user_id = $1', [userId]);
-    const [likesResult] = await pool.query('SELECT COUNT(*) AS likes FROM likes WHERE liked_user_id = $1', [userId]);
-    const [blocksResult] = await pool.query('SELECT COUNT(*) AS blocks FROM blocks WHERE blocked_user_id = $1', [userId]);
-    const [reportsResult] = await pool.query('SELECT COUNT(*) AS reports FROM reports WHERE reported_user_id = $1', [userId]);
-    const [connectionsResult] = await pool.query('SELECT COUNT(*) AS connections FROM user_connections WHERE user_id = $1', [userId]);
+    const viewsResult = await pool.query('SELECT COUNT(*) AS views FROM profile_views WHERE user_id = $1', [userId]);
+    const likesResult = await pool.query('SELECT COUNT(*) AS likes FROM likes WHERE liked_user_id = $1', [userId]);
+    const blocksResult = await pool.query('SELECT COUNT(*) AS blocks FROM blocks WHERE blocked_user_id = $1', [userId]);
+    const reportsResult = await pool.query('SELECT COUNT(*) AS reports FROM reports WHERE reported_user_id = $1', [userId]);
+    const connectionsResult = await pool.query('SELECT COUNT(*) AS connections FROM user_connections WHERE user_id = $1', [userId]);
 
     const views = parseInt(viewsResult.rows[0].views || 0);
     const likes = parseInt(likesResult.rows[0].likes || 0);
@@ -286,13 +283,16 @@ const getFameRating = async (userId, pool) => {
     const reports = parseInt(reportsResult.rows[0].reports || 0);
     const connections = parseInt(connectionsResult.rows[0].connections || 0);
 
-    let fameRating = (views * 0.4) + (likes * 0.5) + (connections * 0.4) - (blocks * 0.25) - (reports * 0.3);
-    let normalized = (fameRating / 20) * 5;
-    normalized = Math.max(normalized, 0.5);
-    normalized = Math.min(normalized, 5);
 
-    return parseFloat(normalized.toFixed(1));
+    let fameRating = (views * 0.4) + (likes * 0.5) + (connections * 0.4) - (blocks * 0.25) - (reports * 0.3);
+    
+	let normalized = (fameRating / 20) * 100;
+    normalized = Math.max(normalized, 0);
+    normalized = Math.min(normalized, 100);
+
+    return Math.round(normalized);
 };
+
 
 
 export const findDefaultUsers = async (userId, pool, filters) => {
