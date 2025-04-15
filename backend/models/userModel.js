@@ -250,9 +250,9 @@ export const findUsersByPreference = async (userId, filters) => {
         } else if (filters.sortBy === "loc") {
             orderByClause = "ORDER BY distance_km ASC";
         } else if (filters.sortBy === "popAsc") {
-            orderByClause = "ORDER BY fame_count ASC";
+            orderByClause = "ORDER BY u.fame_rating ASC";
         } else if (filters.sortBy === "popDesc") {
-            orderByClause = "ORDER BY fame_count DESC";
+            orderByClause = "ORDER BY u.fame_rating DESC";
         }
 		query += orderByClause;
 
