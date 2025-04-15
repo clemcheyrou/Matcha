@@ -1,7 +1,8 @@
 import pool from "../utils/db.js";
 import {
 	getFameRating,
-	findDefaultUsers
+	findDefaultUsers,
+	addSharedTagsScore
   } from './algoModel.js';
   
 
@@ -140,6 +141,12 @@ export const findUsersByPreference = async (userId, filters) => {
 		
     }
 
+	let flagFiltreTags = false;
+	if (filters.tags && filters.tags.length > 0) {
+		const tagArray = filters.tags.map(tag => `'${tag}'`).join(", ");
+		flagFiltreTags = true;
+	}
+
     if (filters.locationRange && filters.locationRange.length === 2) {
         conditions.push(`6371 * acos( cos(radians(loc1.lat)) * cos(radians(loc2.lat)) * cos(radians(loc2.lng) - radians(loc1.lng)) + sin(radians(loc1.lat)) * sin(radians(loc2.lat)) ) BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
         values.push(filters.locationRange[0], filters.locationRange[1]);
@@ -151,15 +158,7 @@ export const findUsersByPreference = async (userId, filters) => {
 		values.push(filters.fameRange[0], filters.fameRange[1]);
 		paramIndex += 2;
 	}
-
-    if (filters.tags && filters.tags.length > 0) {
-        const tagIndexStart = paramIndex;
-        const tagConditions = `u.interests && ARRAY[${filters.tags.map((tag, index) => `$${tagIndexStart + index}`).join(", ")}]`;
-        conditions.push(tagConditions);
-        values.push(...filters.tags);
-        paramIndex += filters.tags.length;
-    }
-
+	
 	const userGender = await getUserGender(userId);
 
     let otherPref = '';
@@ -200,49 +199,46 @@ export const findUsersByPreference = async (userId, filters) => {
     }
 
     let query = `
-        SELECT 
-            u.id,
-            u.username,
-            u.orientation,
+		SELECT 
+			u.id,
+			u.username,
+			u.orientation,
 			u.firstname,
 			u.lastname,
-            u.age, 
-            u.gender, 
-            u.bio, 
-            u.interests,
-            u.is_connected,
+			u.age, 
+			u.gender, 
+			u.bio, 
+			u.interests,
+			u.is_connected,
 			u.last_connected_at,
-            p.url AS profile_photo,
-            6371 * acos(
-                cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
-                cos(radians(loc2.lng) - radians(loc1.lng)) +
-                sin(radians(loc1.lat)) * sin(radians(loc2.lat))
-            ) AS distance_km,
-            (SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) AS fame_count, 
-            CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
-            CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
-        FROM 
-            users u
-        LEFT JOIN photos p ON u.profile_photo_id = p.id
-        LEFT JOIN matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
-        LEFT JOIN likes l ON l.user_id = $1 AND l.liked_user_id = u.id
-        LEFT JOIN likes l2 ON l2.user_id = u.id AND l2.liked_user_id = $1
-        LEFT JOIN blocks b ON b.user_id = $1 AND b.blocked_user_id = u.id
-        LEFT JOIN locations loc1 ON loc1.user_id = u.id
-        LEFT JOIN locations loc2 ON loc2.user_id = $1
-        WHERE ${conditions.join(" AND ")}
-    `;
+			p.url AS profile_photo,
+			6371 * acos(
+				cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
+				cos(radians(loc2.lng) - radians(loc1.lng)) +
+				sin(radians(loc1.lat)) * sin(radians(loc2.lat))
+			) AS distance_km,
+			(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) AS fame_count, 
+			CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
+			CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
+		FROM 
+			users u
+		LEFT JOIN photos p ON u.profile_photo_id = p.id
+		LEFT JOIN matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
+		LEFT JOIN likes l ON l.user_id = $1 AND l.liked_user_id = u.id
+		LEFT JOIN likes l2 ON l2.user_id = u.id AND l2.liked_user_id = $1
+		LEFT JOIN blocks b ON b.user_id = $1 AND b.blocked_user_id = u.id
+		LEFT JOIN locations loc1 ON loc1.user_id = u.id
+		LEFT JOIN locations loc2 ON loc2.user_id = $1
+		WHERE ${conditions.join(" AND ")}
+	`;
 
+	console.log("filters.sortBy ", filters.sortBy, " | filters.tags.length = ", filters.tags.length);
     if (filters.sortBy != "pertinent") {
-        if (filters.sortBy === "tag" && filters.tags.length > 0) {
-			orderByClause = `
-				ORDER BY (
-					SELECT COUNT(*) 
-					FROM unnest(u.interests::text[]) AS interest
-					WHERE interest ILIKE ANY(ARRAY[${filters.tags.map((tag, index) => `$${paramIndex + index + 1}`).join(", ")}])
-				) DESC
-			`;
-			values.push(...filters.tags);
+        if (filters.sortBy === "tag") {
+			const result = await pool.query(query, values);
+			const sortByCommunTags = await addSharedTagsScore(userId, result.rows, pool);
+			return sortByCommunTags;
+
         } else if (filters.sortBy === "ageAsc") {
             orderByClause = "ORDER BY u.age ASC";
         } else if (filters.sortBy === "ageDesc") {
@@ -259,12 +255,12 @@ export const findUsersByPreference = async (userId, filters) => {
 		const result = await pool.query(query, values);
 		return result.rows;
     }
-
 	const isNoFiltersApplied = 
     (filters.ageRange[0] === 0 && filters.ageRange[1] === 100) &&
     (filters.locationRange[0] === 0 && filters.locationRange[1] === 1000) &&
     (filters.fameRange[0] === 0 && filters.fameRange[1] === 100) &&
-    (!filters.tags || filters.tags.length === 0) && filters.sortBy === "pertinent";
+    (!filters.tags || filters.tags.length === 0) && filters.sortBy === "pertinent" 
+	&& !flagFiltreTags;
 
 	if (isNoFiltersApplied) {
 		const matchs = await findDefaultUsers(userId, pool, filters);
@@ -274,6 +270,26 @@ export const findUsersByPreference = async (userId, filters) => {
     query += orderByClause;
 
     const result = await pool.query(query, values);
+	
+	if (flagFiltreTags === true) {
+		let users = result.rows;
+		const tagsCount = filters.tags.length;
+		let matchingUsers = [];
+	
+		users = users.filter(user => {
+			if (!user.interests || user.interests.length === 0) return false;
+	
+			const matchCount = user.interests.filter(tag => filters.tags.includes(tag)).length;
+			//console.log(`Utilisateur ${user.username}: Nombre de correspondances de tags: ${matchCount}`);
+			if (matchCount === tagsCount) {
+				matchingUsers.push(user);
+				return true;
+			}
+			return false;
+		});
+		//console.log("Utilisateurs correspondants:", matchingUsers);
+		return matchingUsers;
+	}
     return result.rows;
 };
 

@@ -108,9 +108,9 @@ export async function findDefaultUsers (userId, pool, filters) {
 			
 			const profilesDistances = await addDistanceScore(userId, profilesWithSharedTags, pool)
 		
-			const profilesFameRating = await addFameRating(profilesDistances, pool);
+			const Finalprofiles = await addFameRating(profilesDistances, pool);
 			
-			profilesFameRating.sort((a, b) => {
+			Finalprofiles.sort((a, b) => {
                 const scoreA = ((a.sharedTagCount || 0) * 0.3) + (a.fameRating * 0.3) + ((a.distance > 0 ? (1 / a.distance) : 0) * 0.6);
                 const scoreB = ((b.sharedTagCount || 0) * 0.3) + (b.fameRating * 0.3) + ((b.distance > 0 ? (1 / b.distance) : 0) * 0.6);
                 
@@ -119,15 +119,15 @@ export async function findDefaultUsers (userId, pool, filters) {
                 return 0;
             });
 
-			// profilesFameRating.forEach(user => {
+			// Finalprofiles.forEach(user => {
 			// 	console.log(`ID: ${user.id}, Username: ${user.username}, Score: ${((user.sharedTagCount || 0) * 0.3) + (user.fameRating * 0.3) + ((user.distance > 0 ? (1 / user.distance) : 0) * 0.6)}`);
 			// });
-			return profilesFameRating;
+			return Finalprofiles;
 		}
 		
         return result.rows;
     } catch (error) {
-        console.error('Erreur lors de la récupération des matchs:', error);
+        console.error('Error during profile recovery :', error);
         return [];
     }
 };
