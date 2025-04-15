@@ -394,22 +394,53 @@ export const findDefaultUsers = async (userId, pool, filters) => {
 		`;
 
 		const result = await pool.query(query, values);
-		
-		const profilesWithSharedTags = await addSharedTagsScore(userId, result.rows, pool);
-		
-		profilesWithSharedTags.forEach(user => {
-			console.log(`👤 Utilisateur - ID: ${user.id}, Username: ${user.username}`);
-			console.log(`   → Tags en commun: ${user.sharedTagCount} [${user.sharedTags.join(", ")}]`);
-			console.log('---');
-		});
 
-		if (profilesWithSharedTags.length === 0) {
-            return res.status(404).json({ message: 'Aucun match trouvé avec les tags communs' });
+		if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'No profiles' });
         }
 
+		if (result.rows.length > 1)
+		{
+			const profilesWithSharedTags = await addSharedTagsScore(userId, result.rows, pool);
+			
+			// profilesWithSharedTags.forEach(user => {
+			// 	console.log(`👤 Utilisateur - ID: ${user.id}, Username: ${user.username}`);
+			// 	console.log(`   → Tags en commun: ${user.sharedTagCount} [${user.sharedTags.join(", ")}]`);
+			// 	console.log('---');
+			// });
+
+			const profilesDistances = await addDistanceScore(userId, profilesWithSharedTags, pool)
 		
+			// profilesDistances.forEach(user => {
+			// 	console.log(`👤 Utilisateur - ID: ${user.id}, Username: ${user.username}`);
+			// 	console.log(`📍 Distance: ${user.distance?.toFixed(2) ?? "N/A"} km`);
+			// 	console.log('---');
+			// });
+
+			const profilesFameRating = await addFameRating(profilesDistances, pool);
+			
+			// profilesFameRating.forEach(user => {
+			// 	console.log(`👤 Utilisateur - ID: ${user.id}, Username: ${user.username}`);
+			// 	console.log(`🌟 Fame Rating: ${user.fameRating}`);
+			// 	console.log('---');
+			// });
+
+			profilesFameRating.sort((a, b) => {
+                const scoreA = ((a.sharedTagCount || 0) * 0.3) + (a.fameRating * 0.3) + ((a.distance > 0 ? (1 / a.distance) : 0) * 0.6);
+                const scoreB = ((b.sharedTagCount || 0) * 0.3) + (b.fameRating * 0.3) + ((b.distance > 0 ? (1 / b.distance) : 0) * 0.6);
+                
+                if (scoreA < scoreB) return 1;
+                if (scoreA > scoreB) return -1;
+                return 0;
+            });
+
+			profilesFameRating.forEach(user => {
+				console.log(`ID: ${user.id}, Username: ${user.username}, Score: ${((user.sharedTagCount || 0) * 0.3) + (user.fameRating * 0.3) + ((user.distance > 0 ? (1 / user.distance) : 0) * 0.6)}`);
+			});
+			return profilesFameRating;
+		}
 		
-        return profilesWithSharedTags;
+        return result.rows;
     } catch (error) {
         console.error('Erreur lors de la récupération des matchs:', error);
         return [];
@@ -432,9 +463,6 @@ export const addSharedTagsScore = async (userId, users, pool) => {
 
 			const sharedTagCount = sharedTags.length;
 
-			// On retourne un nouvel objet utilisateur enrichi avec :
-			// - le tableau des tags en commun
-			// - le nombre total de tags en commun
 			return {
 				...user,
 				sharedTags,
@@ -442,13 +470,98 @@ export const addSharedTagsScore = async (userId, users, pool) => {
 			};
 		});
 
-		// On trie les utilisateurs par nombre de tags communs (du plus élevé au plus faible)
 		enrichedUsers.sort((a, b) => b.sharedTagCount - a.sharedTagCount);
-
+		
 		return enrichedUsers;
 
 	} catch (err) {
 		console.error("Erreur dans addSharedTagsScore:", err);
+		return users;
+	}
+};
+
+export const addDistanceScore = async (userId, users, pool) => {
+	try {
+
+		const userLocRes = await pool.query(
+			`SELECT lat, lng FROM locations WHERE user_id = $1`,
+			[userId]
+		);
+		const userLoc = userLocRes.rows[0];
+
+		if (!userLoc) {
+			console.warn("No location found");
+			return users;
+		}
+
+		const usersWithDistance = [];
+
+		for (const user of users) {
+			const targetLocRes = await pool.query(
+				`SELECT lat, lng FROM locations WHERE user_id = $1`,
+				[user.id]
+			);
+			const targetLoc = targetLocRes.rows[0];
+
+			if (!targetLoc) {
+				console.warn(`No location found for user ${user.id}`);
+				continue;
+			}
+
+			const distance = await calculateDistance(parseFloat(userLoc.lat), parseFloat(userLoc.lng), parseFloat(targetLoc.lat), parseFloat(targetLoc.lng));
+			
+			usersWithDistance.push({
+				...user,
+				distance
+			});
+		}
+
+		usersWithDistance.sort((a, b) => a.distance - b.distance);
+
+		return usersWithDistance;
+
+	} catch (err) {
+		console.error("Error in addDistanceScore:", err);
+		return users;
+	}
+};
+
+export async function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+}
+
+export const addFameRating = async (users, pool) => {
+	try {
+		const FameUsers = [];
+
+		for (const user of users) {
+			const result = await pool.query(
+				'SELECT fame_rating FROM users WHERE id = $1',
+				[user.id]
+			);
+
+			const fameRating = result.rows[0]?.fame_rating || 0;
+
+			FameUsers.push({
+				...user,
+				fameRating,
+			});
+		}
+
+		FameUsers.sort((a, b) => b.fameRating - a.fameRating);
+
+		return FameUsers;
+
+	} catch (err) {
+		console.error("Error in addFameRating:", err);
 		return users;
 	}
 };
