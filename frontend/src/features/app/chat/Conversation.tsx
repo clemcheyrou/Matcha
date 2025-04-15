@@ -14,14 +14,14 @@ export const Conversation: React.FC = () => {
     setNewMessage,
     sendMessage,
     sendAudio,
-    setNewAudio,
   } = useMessages(Number(chatId));
 
+  console.log(messages)
   return (
     <div className="flex flex-col h-full">
       <Header chatId={Number(chatId)}/>
       <MessageList messages={messages} />
-      <MessageInput newMessage={newMessage} setNewMessage={setNewMessage} sendMessage={sendMessage} sendAudio={sendAudio} setNewAudio={setNewAudio}/>
+      <MessageInput newMessage={newMessage} setNewMessage={setNewMessage} sendMessage={sendMessage} sendAudio={sendAudio}/>
     </div>
   );
 };

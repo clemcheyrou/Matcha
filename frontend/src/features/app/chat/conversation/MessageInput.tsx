@@ -9,8 +9,7 @@ interface MessageInputProps {
 	newMessage: string;
 	setNewMessage: (message: string) => void;
 	sendMessage: () => void;
-	sendAudio: () => void;
-	setNewAudio: (audio: string) => void;
+	sendAudio: (audioUrl: string) => void;
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({
@@ -18,10 +17,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 	setNewMessage,
 	sendMessage,
 	sendAudio,
-	setNewAudio
 }) => {
 	const [isRecording, setIsRecording] = useState(false);
-	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const { chatId } = useParams<{ chatId: string }>();
 
@@ -38,9 +35,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
 		mediaRecorderRef.current.onstop = () => {
 			const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-			const audioUrl = URL.createObjectURL(audioBlob);
-			setNewAudio(audioUrl);
-			sendAudio();
 			socket.emit("audio-message", {
 				chat_id: Number(chatId),
 				audio: audioBlob,
@@ -51,23 +45,22 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 		setIsRecording(true);
 	};
 
+	useEffect(() => {
+		socket.on("audio-url", (data) => {
+			sendAudio(data);
+		});
+
+		return () => {
+			socket.off("audio-url");
+		};
+		// eslint-disable-next-line
+	}, []);
+
 	const stopRecording = () => {
 		mediaRecorderRef.current?.stop();
 		setIsRecording(false);
 	};
 
-	useEffect(() => {
-		socket.on("audio-message", (audioData: Blob) => {
-			const audioUrl = URL.createObjectURL(audioData);
-			if (audioRef.current) {
-				audioRef.current.src = audioUrl;
-			}
-		});
-
-		return () => {
-			socket.off("audio-message");
-		};
-	}, []);
 
 	return (
 		<div className="pt-2 pb-6">
