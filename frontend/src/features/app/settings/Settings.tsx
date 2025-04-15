@@ -33,6 +33,13 @@ const TABS = [
 	{ value: 2, label: "Bisexual" },
 ]; 
 
+const sanitizeInput = (input: string) => {
+	return input
+	  .replace(/<script.*?>.*?<\/script>/gi, "")
+	  .replace(/<\/?[^>]+(>|$)/g, "")
+	  .trim();
+  };
+
 export const Settings: React.FC = () => {
 	const dispatch = useDispatch<AppDispatch>();
 	const user = useSelector((state: RootState) => state.auth.user);
@@ -126,7 +133,7 @@ export const Settings: React.FC = () => {
 					gender,
 					age,
 					sexualPreference,
-					biography,
+					biography: sanitizeInput(biography),
 					interests,
 					profilePicture: photoUrl,
 				};
@@ -140,7 +147,7 @@ export const Settings: React.FC = () => {
 					gender,
 					age,
 					sexualPreference,
-					biography,
+					biography: sanitizeInput(biography),
 					interests,
 				};
 				await dispatch(updateUserProfile(profileData)).unwrap();
