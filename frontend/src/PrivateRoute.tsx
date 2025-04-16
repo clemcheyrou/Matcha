@@ -45,6 +45,10 @@ export const PrivateRoute = () => {
         return <Navigate to="/login" />;
     }
 
+    if (isAuthenticated && !onboarding && location.pathname === '/home') {
+        return <Navigate to="/step1" />;
+    }
+
     return <Outlet />;
 };
 

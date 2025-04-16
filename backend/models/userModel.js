@@ -303,8 +303,8 @@ export const deleteUser = async (userId) => {
 // AJOUT CONDITION SPLIT
 export const createUserSocial = async (username, email, firstname, lastname, provider) => {
 	const query = `
-	  INSERT INTO users (username, email, firstname, lastname, password, auth_type)
-	  VALUES ($1, $2, $3, $4, $5, $6)
+	  INSERT INTO users (username, email, firstname, lastname, password, auth_type, is_verified)
+	  VALUES ($1, $2, $3, $4, $5, $6, true)
 	  RETURNING id, created_at;
 	`;
 	const { rows } = await pool.query(query, [username, email, firstname, lastname, null, provider]);

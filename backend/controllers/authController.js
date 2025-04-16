@@ -4,7 +4,6 @@ import { generateToken, verifyToken } from "../utils/token.js";
 import { sendConfirmationEmail, sendResetPasswordEmail } from "../utils/emailSender.js";
 import { updateUserPassword } from "../models/authModel.js";
 import pool from "../utils/db.js";
-import { io, users } from "../index.js";
 
 export const register = async (req, res) => {
 	const { username, lastname, firstname, email, password } = req.body;
@@ -44,7 +43,10 @@ export const handleEmailConfirmation = async (req, res) => {
         await updateUserVerification(decoded.userId);
         
 		req.session.userId = decoded.userId;
-		return res.json({ success: true });
+        const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.userId]);
+		const user = userResult.rows[0];
+        await pool.query('UPDATE users SET is_verified = $1 WHERE id = $2', [true, user.id]);
+        return res.json({ success: true });
     } catch (error) {
         console.error(error);
     }
@@ -64,6 +66,10 @@ export const login = async (req, res) => {
             return res
                 .status(400)
                 .json({ message: "incorrect username or password" });
+        if (!user.is_verified)
+            return res
+                .status(400)
+                .json({ message: "not verified" });
 
         req.session.userId = user.id;
         res.status(200).json({ success: true, message: "successful connection" });
