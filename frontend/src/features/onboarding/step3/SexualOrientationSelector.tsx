@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { BreadcrumbSteps } from "../BreadcrumbSteps.tsx";
 import { useSexualOrientation } from "./hooks/useSexualOrientation.ts";
 
