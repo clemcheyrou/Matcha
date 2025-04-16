@@ -72,6 +72,11 @@ export const login = async (req, res) => {
                 .json({ message: "not verified" });
 
         req.session.userId = user.id;
+        await pool.query(`
+            INSERT INTO user_connections (user_id, connected_at)
+            VALUES ($1, CURRENT_TIMESTAMP);
+        `, [user.id]);
+
         res.status(200).json({ success: true, message: "successful connection" });
     } catch (error) {
         console.error(error);

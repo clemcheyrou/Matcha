@@ -1,4 +1,10 @@
 import pool from "../utils/db.js";
+import {
+	getFameRating,
+	findDefaultUsers,
+	addSharedTagsScore
+  } from './algoModel.js';
+  
 
 export const getAllUsers = async () => {
 	const result = await pool.query("SELECT * FROM users");
@@ -23,6 +29,14 @@ export const getUserByUsername = async (username) => {
 	]);
 	return result.rows[0];
 };
+
+export const getFameRatingByUserId = async (userId) => {
+
+	const result = await pool.query('SELECT fame_rating FROM users WHERE id = $1', [
+		userId,
+	]);
+	return result.rows[0].fame_rating;
+} 
 
 export const updateUserVerification = async (userId) => {
 	const query = "UPDATE users SET is_verified = TRUE WHERE id = $1";
@@ -74,7 +88,7 @@ export const getUserById = async (idView, userId) => {
 
 };
 
-const getUserGender = async (userId) => {
+export const getUserGender = async (userId) => {
     const query = `
         SELECT gender
         FROM users
@@ -85,6 +99,13 @@ const getUserGender = async (userId) => {
 };
 
 export const findUsersByPreference = async (userId, filters) => {
+
+	const users = await pool.query('SELECT id FROM users');
+	for (const user of users.rows) {
+		const fame = await getFameRating(user.id, pool);
+		await pool.query('UPDATE users SET fame_rating = $1 WHERE id = $2', [fame, user.id]);
+	}
+
     let orderByClause = "";
     let values = [userId];
     let conditions = [
@@ -114,10 +135,17 @@ export const findUsersByPreference = async (userId, filters) => {
         return [];
 
     if (filters.ageRange && filters.ageRange.length === 2) {
-        conditions.push(`u.age BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
+		conditions.push(`u.age BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
         values.push(filters.ageRange[0], filters.ageRange[1]);
         paramIndex += 2;
+		
     }
+
+	let flagFiltreTags = false;
+	if (filters.tags && filters.tags.length > 0) {
+		const tagArray = filters.tags.map(tag => `'${tag}'`).join(", ");
+		flagFiltreTags = true;
+	}
 
     if (filters.locationRange && filters.locationRange.length === 2) {
         conditions.push(`6371 * acos( cos(radians(loc1.lat)) * cos(radians(loc2.lat)) * cos(radians(loc2.lng) - radians(loc1.lng)) + sin(radians(loc1.lat)) * sin(radians(loc2.lat)) ) BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
@@ -125,20 +153,12 @@ export const findUsersByPreference = async (userId, filters) => {
         paramIndex += 2;
     }
 
-    if (filters.fameRange && filters.fameRange.length === 2) {
-        conditions.push(`(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
-        values.push(filters.fameRange[0], filters.fameRange[1]);
-        paramIndex += 2;
-    }
-
-    if (filters.tags && filters.tags.length > 0) {
-        const tagIndexStart = paramIndex;
-        const tagConditions = `u.interests && ARRAY[${filters.tags.map((tag, index) => `$${tagIndexStart + index}`).join(", ")}]`;
-        conditions.push(tagConditions);
-        values.push(...filters.tags);
-        paramIndex += filters.tags.length;
-    }
-
+	if (filters.fameRange && filters.fameRange.length === 2) {
+		conditions.push(`u.fame_rating BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
+		values.push(filters.fameRange[0], filters.fameRange[1]);
+		paramIndex += 2;
+	}
+	
 	const userGender = await getUserGender(userId);
 
     let otherPref = '';
@@ -179,49 +199,46 @@ export const findUsersByPreference = async (userId, filters) => {
     }
 
     let query = `
-        SELECT 
-            u.id,
-            u.username,
-            u.orientation,
+		SELECT 
+			u.id,
+			u.username,
+			u.orientation,
 			u.firstname,
 			u.lastname,
-            u.age, 
-            u.gender, 
-            u.bio, 
-            u.interests,
-            u.is_connected,
+			u.age, 
+			u.gender, 
+			u.bio, 
+			u.interests,
+			u.is_connected,
 			u.last_connected_at,
-            p.url AS profile_photo,
-            6371 * acos(
-                cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
-                cos(radians(loc2.lng) - radians(loc1.lng)) +
-                sin(radians(loc1.lat)) * sin(radians(loc2.lat))
-            ) AS distance_km,
-            (SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) AS fame_count, 
-            CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
-            CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
-        FROM 
-            users u
-        LEFT JOIN photos p ON u.profile_photo_id = p.id
-        LEFT JOIN matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
-        LEFT JOIN likes l ON l.user_id = $1 AND l.liked_user_id = u.id
-        LEFT JOIN likes l2 ON l2.user_id = u.id AND l2.liked_user_id = $1
-        LEFT JOIN blocks b ON b.user_id = $1 AND b.blocked_user_id = u.id
-        LEFT JOIN locations loc1 ON loc1.user_id = u.id
-        LEFT JOIN locations loc2 ON loc2.user_id = $1
-        WHERE ${conditions.join(" AND ")}
-    `;
+			p.url AS profile_photo,
+			6371 * acos(
+				cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
+				cos(radians(loc2.lng) - radians(loc1.lng)) +
+				sin(radians(loc1.lat)) * sin(radians(loc2.lat))
+			) AS distance_km,
+			(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) AS fame_count, 
+			CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
+			CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
+		FROM 
+			users u
+		LEFT JOIN photos p ON u.profile_photo_id = p.id
+		LEFT JOIN matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
+		LEFT JOIN likes l ON l.user_id = $1 AND l.liked_user_id = u.id
+		LEFT JOIN likes l2 ON l2.user_id = u.id AND l2.liked_user_id = $1
+		LEFT JOIN blocks b ON b.user_id = $1 AND b.blocked_user_id = u.id
+		LEFT JOIN locations loc1 ON loc1.user_id = u.id
+		LEFT JOIN locations loc2 ON loc2.user_id = $1
+		WHERE ${conditions.join(" AND ")}
+	`;
 
-    if (filters.sortBy) {
-        if (filters.sortBy === "tag" && filters.tags.length > 0) {
-			orderByClause = `
-				ORDER BY (
-					SELECT COUNT(*) 
-					FROM unnest(u.interests::text[]) AS interest
-					WHERE interest ILIKE ANY(ARRAY[${filters.tags.map((tag, index) => `$${paramIndex + index + 1}`).join(", ")}])
-				) DESC
-			`;
-			values.push(...filters.tags);
+	console.log("filters.sortBy ", filters.sortBy, " | filters.tags.length = ", filters.tags.length);
+    if (filters.sortBy != "pertinent") {
+        if (filters.sortBy === "tag") {
+			const result = await pool.query(query, values);
+			const sortByCommunTags = await addSharedTagsScore(userId, result.rows, pool);
+			return sortByCommunTags;
+
         } else if (filters.sortBy === "ageAsc") {
             orderByClause = "ORDER BY u.age ASC";
         } else if (filters.sortBy === "ageDesc") {
@@ -229,15 +246,50 @@ export const findUsersByPreference = async (userId, filters) => {
         } else if (filters.sortBy === "loc") {
             orderByClause = "ORDER BY distance_km ASC";
         } else if (filters.sortBy === "popAsc") {
-            orderByClause = "ORDER BY fame_count ASC";
+            orderByClause = "ORDER BY u.fame_rating ASC";
         } else if (filters.sortBy === "popDesc") {
-            orderByClause = "ORDER BY fame_count DESC";
+            orderByClause = "ORDER BY u.fame_rating DESC";
         }
+		query += orderByClause;
+
+		const result = await pool.query(query, values);
+		return result.rows;
     }
+	const isNoFiltersApplied = 
+    (filters.ageRange[0] === 0 && filters.ageRange[1] === 100) &&
+    (filters.locationRange[0] === 0 && filters.locationRange[1] === 1000) &&
+    (filters.fameRange[0] === 0 && filters.fameRange[1] === 100) &&
+    (!filters.tags || filters.tags.length === 0) && filters.sortBy === "pertinent" 
+	&& !flagFiltreTags;
+
+	if (isNoFiltersApplied) {
+		const matchs = await findDefaultUsers(userId, pool, filters);
+		return matchs;
+	}
 
     query += orderByClause;
 
     const result = await pool.query(query, values);
+	
+	if (flagFiltreTags === true) {
+		let users = result.rows;
+		const tagsCount = filters.tags.length;
+		let matchingUsers = [];
+	
+		users = users.filter(user => {
+			if (!user.interests || user.interests.length === 0) return false;
+	
+			const matchCount = user.interests.filter(tag => filters.tags.includes(tag)).length;
+			//console.log(`Utilisateur ${user.username}: Nombre de correspondances de tags: ${matchCount}`);
+			if (matchCount === tagsCount) {
+				matchingUsers.push(user);
+				return true;
+			}
+			return false;
+		});
+		//console.log("Utilisateurs correspondants:", matchingUsers);
+		return matchingUsers;
+	}
     return result.rows;
 };
 
@@ -299,8 +351,7 @@ export const deleteUser = async (userId) => {
 	const result = await pool.query(query, values);
 	return result.rowCount > 0;
 };
-//change name => username 
-// AJOUT CONDITION SPLIT
+
 export const createUserSocial = async (username, email, firstname, lastname, provider) => {
 	const query = `
 	  INSERT INTO users (username, email, firstname, lastname, password, auth_type, is_verified)

@@ -9,7 +9,6 @@ import {getUserByUsername} from "../models/userModel.js"
 export const createOAuthStrategy = (Strategy, provider, options) => {
 	passport.use(
 		new Strategy(options, async (access_token, refresh_token, profile, done) => {
-			console.log("access Token: ", access_token);
 			try {
 				const email = profile.emails ? profile.emails[0]?.value : null;
 				if (!email) return done(new Error("email not available"), null);

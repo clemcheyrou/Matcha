@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
     orientation INTEGER CHECK (orientation IN (0, 1, 2)),
     profile_photo_id INTEGER,
 	location BOOLEAN DEFAULT FALSE,
+    fame_rating NUMERIC DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -188,4 +189,10 @@ CREATE TABLE user_events (
   event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
   invitation_status VARCHAR(50) DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS user_connections (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    connected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
