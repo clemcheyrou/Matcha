@@ -90,11 +90,11 @@ CREATE INDEX idx_matches_user1_user2 ON matches (user_1_id, user_2_id);
 
 INSERT INTO users (username, firstname, lastname, email, password, age, gender, bio, interests, auth_type, oauth_token, orientation)
 VALUES 
-    ('alice123','Alice', 'Dupont', 'alice@example.com', 'password123', 25, 'Woman', 'test bio', ARRAY['Vegan', 'Fitness', 'Travel'], 'local', NULL, 1),
-    ('Bob21', 'Bob', 'Martin','bob@example.com', 'password456', 30, 'Man', 'test bio', ARRAY['Books', 'Art', 'Piercing'], 'local', NULL, 2),
-    ('Charlie5', 'Charlie', 'Bordereau','charlie@example.com', NULL, 28, 'Woman', 'test bio', ARRAY['Music', 'Gaming', 'Travel'], 'google', 'oauth_token_example', 0),
-    ('David90','David', 'Herman','david@example.com', NULL, 35, 'Man', 'test bio', ARRAY['Movies', 'Fitness'], 'facebook', 'oauth_token_example2', 1),
-    ('Emma67','Emma', 'Laurent','emma@example.com', NULL, 29, 'Woman', 'test bio', ARRAY['Movies'], 'apple', 'oauth_token_example3', 2)
+    ('alice123','Alice', 'Dupont', 'alice@example.com', 'Passpass@1', 25, 'Woman', 'test bio', ARRAY['Vegan', 'Fitness', 'Travel'], 'local', NULL, 1),
+    ('Bob21', 'Bob', 'Martin','bob@example.com', 'Passpass@2', 30, 'Man', 'test bio', ARRAY['Books', 'Art', 'Piercing'], 'local', NULL, 2),
+    ('Charlie5', 'Charlie', 'Bordereau','charlie@example.com', 'Passpass@3', 28, 'Woman', 'test bio', ARRAY['Music', 'Gaming', 'Travel'], 'google', 'oauth_token_example', 0),
+    ('David90','David', 'Herman','david@example.com', 'Passpass@4', 35, 'Man', 'test bio', ARRAY['Movies', 'Fitness'], 'facebook', 'oauth_token_example2', 1),
+    ('Emma67','Emma', 'Laurent','emma@example.com', 'Passpass@5', 29, 'Woman', 'test bio', ARRAY['Movies'], 'apple', 'oauth_token_example3', 2)
 ON CONFLICT DO NOTHING;
 
 DO $$ 

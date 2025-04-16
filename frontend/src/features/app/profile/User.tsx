@@ -43,6 +43,7 @@ export const UserProfile = () => {
 					fame_count: updatedProfile.liked_by_user
 					? (Number(prevData.fame_count) || 0) + 1
 					: Math.max(0, (Number(prevData.fame_count) || 0) - 1)
+					//fame_rating: updatedProfile.fame_rating
 				};
 			});
 		};

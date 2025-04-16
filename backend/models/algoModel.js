@@ -1,9 +1,9 @@
 import pool from "../utils/db.js";
-import {getUserGender} from "./userModel.js"
+import {getUserGender, getAllUsers} from "./userModel.js"
 
 export async function findDefaultUsers (userId, pool, filters) {
     try {
-
+		
 		let values = [userId];
 		let conditions = [
 			"u.id <> $1",
@@ -95,6 +95,7 @@ export async function findDefaultUsers (userId, pool, filters) {
 			LEFT JOIN locations loc2 ON loc2.user_id = $1
 			WHERE ${conditions.join(" AND ")}
 		`;
+		//console.log("Requête SQL générée :", query);
 
 		const result = await pool.query(query, values);
 
@@ -102,6 +103,7 @@ export async function findDefaultUsers (userId, pool, filters) {
             return res.status(404).json({ message: 'No profiles' });
         }
 
+		//console.log('Profils récupérés :', result.rows);
 		if (result.rows.length > 1)
 		{
 			const profilesWithSharedTags = await addSharedTagsScore(userId, result.rows, pool);
@@ -153,6 +155,7 @@ export const getFameRating = async (userId, pool) => {
     normalized = Math.max(normalized, 0);
     normalized = Math.min(normalized, 100);
 
+	//console.log('Normalized value: ID = ',userId, "fame => ", normalized);
     return Math.round(normalized);
 };
 
@@ -273,4 +276,171 @@ export async function addFameRating (users, pool)  {
 		return users;
 	}
 };
+
+export async function getUsersByAgeRange (users, pool, minAge, maxAge, userId) {
+
+	try {
+		const userIds = users.map(user => user.id);
+
+		if (userIds.length === 0) {
+			return [];
+		}
+	
+		const query = `
+			SELECT 
+			u.id,
+			u.username,
+			u.orientation,
+			u.firstname,
+			u.lastname,
+			u.age, 
+			u.gender, 
+			u.interests,
+			u.is_connected,
+			u.last_connected_at,
+			p.url AS profile_photo,
+			6371 * acos(
+				cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
+				cos(radians(loc2.lng) - radians(loc1.lng)) +
+				sin(radians(loc1.lat)) * sin(radians(loc2.lat))
+			) AS distance_km,
+			CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
+			CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
+			FROM users u
+			LEFT JOIN photos p ON u.profile_photo_id = p.id
+			LEFT JOIN matches m ON (m.user_1_id = u.id AND m.user_2_id =$4) OR (m.user_1_id = $4 AND m.user_2_id = u.id)
+			LEFT JOIN likes l ON l.user_id = $4 AND l.liked_user_id = u.id
+			LEFT JOIN likes l2 ON l2.user_id = u.id AND l2.liked_user_id = $4
+			LEFT JOIN blocks b ON b.user_id = $4 AND b.blocked_user_id = u.id
+			LEFT JOIN locations loc1 ON loc1.user_id = u.id
+			LEFT JOIN locations loc2 ON loc2.user_id = $4
+			WHERE u.id <> $4
+			AND u.id = ANY($1::int[])
+			AND age BETWEEN $2 AND $3
+		`;
+		const values = [userIds, minAge, maxAge, userId];
+	
+		const result = await pool.query(query, values);
+
+		return result.rows;
+
+	} catch (error) {
+	  console.error('Error getUsersByAgeRange : ', error);
+	  throw error;
+	}
+};
+
+export async function getUsersByLocRange(users, pool, minLoc, maxLoc, userId) {
+
+	try {
+		const userIds = users.map(user => user.id);
+
+		if (userIds.length === 0) {
+			return [];
+		}
+	
+		const query = `
+			SELECT 
+			u.id,
+			u.username,
+			u.orientation,
+			u.firstname,
+			u.lastname,
+			u.age, 
+			u.gender, 
+			u.interests,
+			u.is_connected,
+			u.last_connected_at,
+			p.url AS profile_photo,
+			6371 * acos(
+				cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
+				cos(radians(loc2.lng) - radians(loc1.lng)) +
+				sin(radians(loc1.lat)) * sin(radians(loc2.lat))
+			) AS distance_km,
+			CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
+			CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
+			FROM users u
+			LEFT JOIN photos p ON u.profile_photo_id = p.id
+			LEFT JOIN matches m ON (m.user_1_id = u.id AND m.user_2_id =$4) OR (m.user_1_id = $4 AND m.user_2_id = u.id)
+			LEFT JOIN likes l ON l.user_id = $4 AND l.liked_user_id = u.id
+			LEFT JOIN likes l2 ON l2.user_id = u.id AND l2.liked_user_id =$4
+			LEFT JOIN blocks b ON b.user_id = $4 AND b.blocked_user_id = u.id
+			LEFT JOIN locations loc1 ON loc1.user_id = u.id
+			LEFT JOIN locations loc2 ON loc2.user_id =$4
+			WHERE u.id <>$4
+			AND u.id = ANY($1::int[])
+			AND 6371 * acos(
+				cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
+				cos(radians(loc2.lng) - radians(loc1.lng)) +
+				sin(radians(loc1.lat)) * sin(radians(loc2.lat))
+			) BETWEEN $2 AND $3
+		`;
+		const values = [userIds, minLoc, maxLoc, userId];
+	
+		const result = await pool.query(query, values);
+
+		return result.rows;
+
+	} catch (error) {
+	  console.error('Error getUsersByLocRange : ', error);
+	  throw error;
+	}
+};  
+
+export async function getUsersByFameRatingRange(users, pool, minFame, maxFame, userId) {
+
+	try {
+		const userIds = users.map(user => user.id);
+
+		if (userIds.length === 0) {
+			return [];
+		}
+	
+		const query = `
+			SELECT 
+			u.id,
+			u.username,
+			u.orientation,
+			u.firstname,
+			u.lastname,
+			u.age, 
+			u.gender, 
+			u.interests,
+			u.is_connected,
+			u.last_connected_at,
+			p.url AS profile_photo,
+			6371 * acos(
+				cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
+				cos(radians(loc2.lng) - radians(loc1.lng)) +
+				sin(radians(loc1.lat)) * sin(radians(loc2.lat))
+			) AS distance_km,
+			CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
+			CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
+			FROM users u
+			LEFT JOIN photos p ON u.profile_photo_id = p.id
+			LEFT JOIN matches m ON (m.user_1_id = u.id AND m.user_2_id =$4) OR (m.user_1_id = $4 AND m.user_2_id = u.id)
+			LEFT JOIN likes l ON l.user_id = $4 AND l.liked_user_id = u.id
+			LEFT JOIN likes l2 ON l2.user_id = u.id AND l2.liked_user_id =$4
+			LEFT JOIN blocks b ON b.user_id = $4 AND b.blocked_user_id = u.id
+			LEFT JOIN locations loc1 ON loc1.user_id = u.id
+			LEFT JOIN locations loc2 ON loc2.user_id =$4
+			WHERE u.id <>$4
+			AND u.id = ANY($1::int[])
+			AND u.fame_rating BETWEEN $2 AND $3
+		`;
+		const values = [userIds, minFame, maxFame, userId];
+	
+		const result = await pool.query(query, values);
+
+		//console.log("fAME = ", result.rows);
+		return result.rows;
+
+	} catch (error) {
+	  console.error('Error getUsersByFameRatingRange : ', error);
+	  throw error;
+	}
+}; 
+
+  
+
 
