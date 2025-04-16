@@ -8,7 +8,7 @@ export const EventPlanning = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>(""); // Nouvelle variable d'état pour l'heure
-  const [setMessage] = useState<string>("");
+  const [, setMessage] = useState<string>("");
   const { chatId } = useParams<{ chatId: string }>();
 
   const [currentMonth, setCurrentMonth] = useState(moment());

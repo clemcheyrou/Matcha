@@ -91,7 +91,7 @@ export const useDiscoverNewUsers = () => {
         const handleUserLike = (like: number) => {
             setUsers((prevUsers) =>
                 prevUsers.map((user) =>
-                    user.id === like ? { ...user, liked_by_user: true, fame_count: (Number(user.fame_count) || 0) + 1 } : user
+                    user.id === like ? { ...user, liked_by_user: true, fame_rating: user.fame_rating }: user
                 )
             );
         };
@@ -99,7 +99,7 @@ export const useDiscoverNewUsers = () => {
         const handleUserUnlike = (like: number) => {
             setUsers((prevUsers) =>
                 prevUsers.map((user) =>
-                    user.id === like ? { ...user, liked_by_user: false, fame_count: (Number(user.fame_count) || 0) - 1 } : user
+                    user.id === like ? { ...user, liked_by_user: false, fame_rating: user.fame_rating }: user
                 )
             );
         };
@@ -128,5 +128,6 @@ export const useDiscoverNewUsers = () => {
             socket.off('receiveUnLike', handleReceivelike);
         };
     }, [filters, sortBy, location.isLocationSet]);
+    console.log(users);
     return { users, loading, error };
 };

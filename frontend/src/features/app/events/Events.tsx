@@ -31,9 +31,9 @@ export const Events = () => {
 			<h2 className="text-xl">Invitations</h2>
 			{invitations.length > 0 ? (
 				<ul className="space-y-3 mt-4 overflow-auto h-max-[200px]">
-					{invitations.map((invitation) => (
+					{invitations.map((invitation, id) => (
 						<li
-							key={invitation.id}
+							key={id}
 							className="flex items-center justify-between p-3 bg-bg rounded-lg"
 						>
 							<span className="text-white text-sm">
@@ -80,9 +80,9 @@ export const Events = () => {
 				<p>{eventsError || "No events found."}</p>
 			) : (
 				<ul className="overflow-auto h-[400px]">
-					{events.map((event) => (
+					{events.map((event, id) => (
 						<li
-							key={event.id}
+							key={id}
 							className="mb-4 p-4 bg-bg rounded-lg flex flex-col"
 						>
 							<div className="mt-2 flex justify-between items-center">

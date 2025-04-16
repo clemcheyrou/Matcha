@@ -20,7 +20,7 @@ const interestsList = [
 export const FilterUser = () => {
   const filters = useSelector((state: RootState) => state.filters);
   const dispatch = useDispatch<AppDispatch>();
-  const [tempFilters, setTempFilters] = useState(filters); // Local state for filters
+  const [tempFilters, setTempFilters] = useState(filters);
 
   useEffect(() => {
     setTempFilters(filters);

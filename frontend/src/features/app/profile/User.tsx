@@ -40,9 +40,7 @@ export const UserProfile = () => {
 					...prevData,
 					liked_by_user: updatedProfile.liked_by_user,
 					blocked_by_user: updatedProfile.blocked_by_user,
-					fame_count: updatedProfile.liked_by_user
-					? (Number(prevData.fame_count) || 0) + 1
-					: Math.max(0, (Number(prevData.fame_count) || 0) - 1)
+					fame_rating: updatedProfile.fame_rating
 				};
 			});
 		};
@@ -155,7 +153,7 @@ export const UserProfile = () => {
 											</div>
 										}
 										<div className="flex items-center gap-1 px-3 rounded-full">
-											<span className="font-medium text-pink-700">🔥 {userData.fame_count}</span>
+											<span className="font-medium text-pink-700">🔥 {userData.fame_rating}</span>
 										</div>
 									</div>
 								</div>

@@ -57,8 +57,7 @@ export const getUserById = async (idView, userId) => {
 			) AS distance_km,
 			COALESCE(ARRAY_AGG(DISTINCT ph.url) FILTER (WHERE ph.url IS NOT NULL), '{}') AS photos,
 			CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
-            CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other,
-			(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) AS fame_count
+            CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
 		FROM 
 			users u
 		LEFT JOIN 
@@ -211,13 +210,13 @@ export const findUsersByPreference = async (userId, filters) => {
 			u.interests,
 			u.is_connected,
 			u.last_connected_at,
+			u.fame_rating,
 			p.url AS profile_photo,
 			6371 * acos(
 				cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
 				cos(radians(loc2.lng) - radians(loc1.lng)) +
 				sin(radians(loc1.lat)) * sin(radians(loc2.lat))
 			) AS distance_km,
-			(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) AS fame_count, 
 			CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
 			CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
 		FROM 
@@ -440,7 +439,6 @@ export const findUsersInMatch = async (userId) => {
 		u.location,
 		u.is_connected,
 		p.url AS profile_photo,
-		COALESCE(fame.fame_count, 0) AS fame_count,
 		EXISTS (
 		  SELECT 1 FROM likes WHERE user_id = $1 AND liked_user_id = u.id
 		) AS liked_by_user
@@ -450,15 +448,12 @@ export const findUsersInMatch = async (userId) => {
 		photos p ON u.profile_photo_id = p.id
 	  LEFT JOIN 
 		matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
-	  LEFT JOIN (
-		SELECT liked_user_id, COUNT(*) AS fame_count FROM likes GROUP BY liked_user_id
-	  ) AS fame ON fame.liked_user_id = u.id
 	  LEFT JOIN blocks b ON b.user_id = $1 AND b.blocked_user_id = u.id 
 	  WHERE 
 		(m.user_1_id = $1 OR m.user_2_id = $1)
 		AND b.blocked_user_id IS NULL
 	  GROUP BY 
-		u.id, p.url, fame.fame_count;
+		u.id, p.url;
 	`;
 	const result = await pool.query(query, [userId]);
 	return result.rows;

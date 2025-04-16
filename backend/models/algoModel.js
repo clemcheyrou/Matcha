@@ -75,13 +75,13 @@ export async function findDefaultUsers (userId, pool, filters) {
 				u.interests,
 				u.is_connected,
 				u.last_connected_at,
+				u.fame_rating,
 				p.url AS profile_photo,
 				6371 * acos(
 					cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
 					cos(radians(loc2.lng) - radians(loc1.lng)) +
 					sin(radians(loc1.lat)) * sin(radians(loc2.lat))
 				) AS distance_km,
-				(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) AS fame_count, 
 				CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
 				CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
 			FROM 
