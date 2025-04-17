@@ -31,16 +31,14 @@ const TABS = [
 	{ value: 0, label: "Heterosexual" },
 	{ value: 1, label: "Homosexual" },
 	{ value: 2, label: "Bisexual" },
-];
+]; 
 
-const sanitizeBio = (input: string): string => {
+const sanitizeInput = (input: string) => {
 	return input
-	  .replace(/&/g, "&amp;")
-	  .replace(/</g, "&lt;")
-	  .replace(/>/g, "&gt;")
-	  .replace(/"/g, "&quot;")
-	  .replace(/'/g, "&#039;");
-};  
+	  .replace(/<script.*?>.*?<\/script>/gi, "")
+	  .replace(/<\/?[^>]+(>|$)/g, "")
+	  .trim();
+  };
 
 export const Settings: React.FC = () => {
 	const dispatch = useDispatch<AppDispatch>();
@@ -135,7 +133,7 @@ export const Settings: React.FC = () => {
 					gender,
 					age,
 					sexualPreference,
-					biography: sanitizeBio(biography),
+					biography: sanitizeInput(biography),
 					interests,
 					profilePicture: photoUrl,
 				};
@@ -149,7 +147,7 @@ export const Settings: React.FC = () => {
 					gender,
 					age,
 					sexualPreference,
-					biography: sanitizeBio(biography),
+					biography: sanitizeInput(biography),
 					interests,
 				};
 				await dispatch(updateUserProfile(profileData)).unwrap();
