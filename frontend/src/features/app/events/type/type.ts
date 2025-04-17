@@ -7,6 +7,8 @@ export type Event = {
 };
   
   export type Invitation = {
+	heure: string;
+	title: string;
 	id: string;
 	date: string;
 };

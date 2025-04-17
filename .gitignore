@@ -4,3 +4,4 @@
 /frontend/node_modules/
 /backend/uploads/photo-*
 /backend/uploads/audio*
+.DS_Store

@@ -32,7 +32,7 @@ export const useMatchedUsers = () => {
 	const addUserFromMatch = (matchedUser: User) => {
 		setUsers((prevUsers) => [
 			...prevUsers,
-			{ ...matchedUser, liked_by_user: true, liked_by_other: false, fame_count: (Number(matchedUser.fame_count) || 0) + 1 }
+			{ ...matchedUser, liked_by_user: true, liked_by_other: false, fame_rating: matchedUser.fame_rating }
 		  ]);
 		};
 

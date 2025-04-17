@@ -5,6 +5,10 @@ import {
 	getAllLikes,
 } from "../models/userModel.js";
 
+import { findDefaultUsers } from "../models/algoModel.js";
+
+import pool from "../utils/db.js";
+
 export const discoverNewUsers = async (req, res) => {
 	const userId = req.session.userId;
 	try {

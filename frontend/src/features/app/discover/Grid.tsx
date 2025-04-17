@@ -128,7 +128,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 											<div className="bg-bg p-1 rounded-md">
 												{user.distance_km === 0 ? '0' : user.distance_km.toFixed(1)} km
 											</div>
-												<span className="text-xs ml-2">🔥 {user.fame_count}</span>
+												<span className="text-xs ml-2">🔥 {user.fame_rating}</span>
 										</div>
 									)}
 								</div>
