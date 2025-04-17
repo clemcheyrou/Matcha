@@ -45,7 +45,6 @@ export const useLocationPopup = () => {
             }),
             credentials: "include",
           });
-
           if (!locationResponse.ok) {
             throw new Error("failed to create location");
           }
@@ -88,7 +87,7 @@ export const useLocationPopup = () => {
         }),
         credentials: "include",
       });
-
+      console.log('ok')
       if (!locationResponse.ok) {
         throw new Error("failed to create location");
       }

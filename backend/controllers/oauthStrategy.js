@@ -28,6 +28,12 @@ export const createOAuthStrategy = (Strategy, provider, options) => {
 					const userMail = await getUserByEmail(email);
 					const userUsername = await getUserByUsername(username);
 
+					if (userMail) {
+						if (userMail.auth_type !== provider) {
+							return done(null);
+						}
+					}
+
 					if (!userMail && !userUsername) {
 						const newUser = await createUserSocial(
 							username,

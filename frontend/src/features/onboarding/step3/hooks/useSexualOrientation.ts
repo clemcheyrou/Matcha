@@ -11,7 +11,6 @@ export const useSexualOrientation = () => {
 
 	const handleSubmit = async () => {
 		try {
-			console.log('ok', selectedImage)
 			const response = await fetch(
 				`${process.env.REACT_APP_API_URL}/api/users/save-orientation`,
 				{

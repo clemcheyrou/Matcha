@@ -2,7 +2,10 @@ import pool from "../utils/db.js";
 import {
 	getFameRating,
 	findDefaultUsers,
-	addSharedTagsScore
+	addSharedTagsScore, 
+	getUsersByAgeRange,
+	getUsersByLocRange,
+	getUsersByFameRatingRange
   } from './algoModel.js';
   
 
@@ -99,11 +102,12 @@ export const getUserGender = async (userId) => {
 
 export const findUsersByPreference = async (userId, filters) => {
 
-	const users = await pool.query('SELECT id FROM users');
-	for (const user of users.rows) {
-		const fame = await getFameRating(user.id, pool);
-		await pool.query('UPDATE users SET fame_rating = $1 WHERE id = $2', [fame, user.id]);
+	const FameUsers = await pool.query('SELECT id FROM users');
+	for (const user of FameUsers.rows) {
+	const fame = await getFameRating(user.id, pool);
+	await pool.query('UPDATE users SET fame_rating = $1 WHERE id = $2', [fame, user.id]);
 	}
+
 
     let orderByClause = "";
     let values = [userId];
@@ -131,33 +135,16 @@ export const findUsersByPreference = async (userId, filters) => {
     const photoCheckResult = await pool.query(isPhotoQuery, [userId]);
 
     if (photoCheckResult.rows.length === 0)
-        return [];
-
-    if (filters.ageRange && filters.ageRange.length === 2) {
-		conditions.push(`u.age BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
-        values.push(filters.ageRange[0], filters.ageRange[1]);
-        paramIndex += 2;
-		
-    }
-
+	{
+		return [];
+	}
+        
 	let flagFiltreTags = false;
 	if (filters.tags && filters.tags.length > 0) {
 		const tagArray = filters.tags.map(tag => `'${tag}'`).join(", ");
 		flagFiltreTags = true;
 	}
 
-    if (filters.locationRange && filters.locationRange.length === 2) {
-        conditions.push(`6371 * acos( cos(radians(loc1.lat)) * cos(radians(loc2.lat)) * cos(radians(loc2.lng) - radians(loc1.lng)) + sin(radians(loc1.lat)) * sin(radians(loc2.lat)) ) BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
-        values.push(filters.locationRange[0], filters.locationRange[1]);
-        paramIndex += 2;
-    }
-
-	if (filters.fameRange && filters.fameRange.length === 2) {
-		conditions.push(`u.fame_rating BETWEEN $${paramIndex} AND $${paramIndex + 1}`);
-		values.push(filters.fameRange[0], filters.fameRange[1]);
-		paramIndex += 2;
-	}
-	
 	const userGender = await getUserGender(userId);
 
     let otherPref = '';
@@ -231,7 +218,6 @@ export const findUsersByPreference = async (userId, filters) => {
 		WHERE ${conditions.join(" AND ")}
 	`;
 
-	console.log("filters.sortBy ", filters.sortBy, " | filters.tags.length = ", filters.tags.length);
     if (filters.sortBy != "pertinent") {
         if (filters.sortBy === "tag") {
 			const result = await pool.query(query, values);
@@ -254,6 +240,7 @@ export const findUsersByPreference = async (userId, filters) => {
 		const result = await pool.query(query, values);
 		return result.rows;
     }
+
 	const isNoFiltersApplied = 
     (filters.ageRange[0] === 0 && filters.ageRange[1] === 100) &&
     (filters.locationRange[0] === 0 && filters.locationRange[1] === 1000) &&
@@ -269,9 +256,11 @@ export const findUsersByPreference = async (userId, filters) => {
     query += orderByClause;
 
     const result = await pool.query(query, values);
-	
+	let ProfilesUsers = [];
+	let users = result.rows;
+
 	if (flagFiltreTags === true) {
-		let users = result.rows;
+		//console.log("Filtre tags");
 		const tagsCount = filters.tags.length;
 		let matchingUsers = [];
 	
@@ -279,17 +268,63 @@ export const findUsersByPreference = async (userId, filters) => {
 			if (!user.interests || user.interests.length === 0) return false;
 	
 			const matchCount = user.interests.filter(tag => filters.tags.includes(tag)).length;
-			//console.log(`Utilisateur ${user.username}: Nombre de correspondances de tags: ${matchCount}`);
+		
 			if (matchCount === tagsCount) {
 				matchingUsers.push(user);
 				return true;
 			}
 			return false;
 		});
-		//console.log("Utilisateurs correspondants:", matchingUsers);
-		return matchingUsers;
+		
+		ProfilesUsers = matchingUsers;
 	}
-    return result.rows;
+
+    if (filters.ageRange && (filters.ageRange[0] != 0
+		|| filters.ageRange[1] != 100)) {
+		//console.log("Filtre age");
+		const minAge = parseInt(filters.ageRange[0], 10);
+		const maxAge = parseInt(filters.ageRange[1], 10);
+		let tab;
+		if (ProfilesUsers.length == 0){
+			tab = users;
+		} else {
+			tab = ProfilesUsers;
+		}
+		let ProfileAge = await getUsersByAgeRange(tab, pool, minAge, maxAge, userId);
+		ProfilesUsers = ProfileAge;
+    }
+	
+	if (filters.locationRange && (filters.locationRange[0] != 0
+		|| filters.locationRange[1] != 1000)) {
+		//console.log("filtre Location");
+		const minLoc = parseInt(filters.locationRange[0], 10);
+		const maxLoc = parseInt(filters.locationRange[1], 10);
+		let tab;
+		if (ProfilesUsers.length == 0){
+			tab = users;
+		} else {
+			tab = ProfilesUsers;
+		}
+		let ProfileLoc = await getUsersByLocRange(tab, pool, minLoc, maxLoc, userId);
+		ProfilesUsers = ProfileLoc;
+    }
+
+	if (filters.fameRange && (filters.fameRange[0] != 0
+		|| filters.fameRange[1] != 100)) {
+		//console.log("filtre fame range");
+		const minFame = parseInt(filters.fameRange[0], 10);
+		const maxFame = parseInt(filters.fameRange[1], 10);
+		let tab;
+		if (ProfilesUsers.length == 0){
+			tab = users;
+		} else {
+			tab = ProfilesUsers;
+		}
+		let ProfileFameRat = await getUsersByFameRatingRange(tab, pool, minFame, maxFame, userId);
+		ProfilesUsers = ProfileFameRat;
+	}
+	//console.log('ProfilesUsers before return:', ProfilesUsers);
+    return ProfilesUsers;
 };
 
 export const getAllUserPhotos = async (userId) => {
@@ -426,6 +461,20 @@ export const updateInterests = async (userId, interests) => {
 };
 
 export const findUsersInMatch = async (userId) => {
+
+	const isPhotoQuery = `
+		SELECT 1
+		FROM photos p
+		JOIN users u ON u.profile_photo_id = p.id
+		WHERE u.id = $1
+	`;
+	const photoCheckResult = await pool.query(isPhotoQuery, [userId]);
+	console.log(photoCheckResult.rows.length);
+    if (photoCheckResult.rows.length === 0)
+	{
+		return [];
+	}
+
 	const query = `
 	  SELECT 
 		u.id, 
@@ -438,6 +487,7 @@ export const findUsersInMatch = async (userId) => {
 		u.interests, 
 		u.location,
 		u.is_connected,
+		u.fame_rating,
 		p.url AS profile_photo,
 		EXISTS (
 		  SELECT 1 FROM likes WHERE user_id = $1 AND liked_user_id = u.id

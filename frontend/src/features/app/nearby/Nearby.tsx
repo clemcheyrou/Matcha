@@ -60,7 +60,7 @@ export const Nearby = () => {
 		              fontWeight: "bold",
 		            }}
 					icon={createMarkerIcon(location.isCurrentUser ? "#FFFFFF" : "#FF69B4")}
-		          />
+				  />
 		        ))}
 		      </GoogleMap>
 			</LoadScript>

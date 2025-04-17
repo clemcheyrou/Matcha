@@ -147,10 +147,15 @@ export const UserProfile = () => {
 										{userData.last_connected_at && !userData.is_connected && <p className="mt-2 text-[12px]">{lastConnection(userData.last_connected_at)}</p>}
 									</div>
 									<div className="flex items-center justify-between">
-										{userData.distance_km && userData.distance_km >= 0 &&
+										{userData.distance_km && userData.distance_km >= 0 ? (
 											<div className="bg-bg p-1 rounded-md">
-												{userData.distance_km === 0 ? '0 km' : userData.distance_km.toFixed(1)} km
+												{userData.distance_km.toFixed(1)} km
 											</div>
+										 ) : (
+											<div className="bg-bg p-1 rounded-md">
+												0 km
+											</div>
+										 )
 										}
 										<div className="flex items-center gap-1 px-3 rounded-full">
 											<span className="font-medium text-pink-700">🔥 {userData.fame_rating}</span>

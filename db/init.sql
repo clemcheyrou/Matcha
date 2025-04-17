@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(100),
-    age INT CHECK (age >= 18),
+    age INT,
     gender VARCHAR(10),
     bio TEXT,
     interests TEXT[],
