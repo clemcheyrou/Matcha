@@ -107,11 +107,12 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 											toggleLike(user.id, user.liked_by_user)
 										}
 									>
-									{user.profile_photo &&
+									{user.currentUserHasPhoto && (
 										user.liked_by_user ? (
 											<RiHeart3Fill className="w-full h-full" />
 										) : (
 											<RiHeart3Line className="w-full h-full" />
+										)
 										)
 									}
 									</div>

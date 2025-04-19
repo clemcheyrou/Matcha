@@ -12,17 +12,6 @@ export async function findDefaultUsers (userId, pool, filters) {
 			"b.blocked_user_id IS NULL"
 		];
 
-		const isPhotoQuery = `
-			SELECT 1
-			FROM photos p
-			JOIN users u ON u.profile_photo_id = p.id
-			WHERE u.id = $1
-		`;
-		const photoCheckResult = await pool.query(isPhotoQuery, [userId]);
-
-		if (photoCheckResult.rows.length === 0)
-			return [];
-
 		const userGender = await getUserGender(userId);
 
 		let otherPref = '';

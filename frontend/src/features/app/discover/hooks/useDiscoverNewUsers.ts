@@ -128,5 +128,6 @@ export const useDiscoverNewUsers = () => {
             socket.off('receiveUnLike', handleReceivelike);
         };
     }, [filters, sortBy, location.isLocationSet]);
+    console.log(users)
     return { users, loading, error };
 };

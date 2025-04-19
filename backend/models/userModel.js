@@ -47,6 +47,14 @@ export const updateUserVerification = async (userId) => {
 };
 
 export const getUserById = async (idView, userId) => {
+	const hasPhotoRes = await pool.query(`
+		SELECT profile_photo_id IS NOT NULL AS has_photo
+		FROM users
+		WHERE id = $1
+	`, [userId]);
+	
+	const currentUserHasPhoto = hasPhotoRes.rows[0]?.has_photo || false;
+
 	const query = `
 		SELECT 
 			u.*,
@@ -86,8 +94,10 @@ export const getUserById = async (idView, userId) => {
 	`;
 
 	const result = await pool.query(query, [idView, userId]);
-	return result.rows[0];
-
+	return {
+		...result.rows[0],
+		currentUserHasPhoto
+	};
 };
 
 export const getUserGender = async (userId) => {
@@ -126,19 +136,14 @@ export const findUsersByPreference = async (userId, filters) => {
         paramIndex++;
     }
 
-    const isPhotoQuery = `
-        SELECT 1
-        FROM photos p
-        JOIN users u ON u.profile_photo_id = p.id
-        WHERE u.id = $1
-    `;
-    const photoCheckResult = await pool.query(isPhotoQuery, [userId]);
+	const hasPhotoRes = await pool.query(`
+		SELECT profile_photo_id IS NOT NULL AS has_photo
+		FROM users
+		WHERE id = $1
+	`, [userId]);
+	
+	const currentUserHasPhoto = hasPhotoRes.rows[0]?.has_photo || false;
 
-    if (photoCheckResult.rows.length === 0)
-	{
-		return [];
-	}
-        
 	let flagFiltreTags = false;
 	if (filters.tags && filters.tags.length > 0) {
 		const tagArray = filters.tags.map(tag => `'${tag}'`).join(", ");
@@ -238,7 +243,11 @@ export const findUsersByPreference = async (userId, filters) => {
 		query += orderByClause;
 
 		const result = await pool.query(query, values);
-		return result.rows;
+		const usersWithPhotoInfo = result.rows.map(user => ({
+			...user,
+			currentUserHasPhoto
+		}));
+		return usersWithPhotoInfo;
     }
 
 	const isNoFiltersApplied = 
@@ -250,7 +259,11 @@ export const findUsersByPreference = async (userId, filters) => {
 
 	if (isNoFiltersApplied) {
 		const matchs = await findDefaultUsers(userId, pool, filters);
-		return matchs;
+		const usersWithPhotoInfo = matchs.map(user => ({
+			...user,
+			currentUserHasPhoto
+		}));
+		return usersWithPhotoInfo;
 	}
 
     query += orderByClause;
@@ -324,7 +337,11 @@ export const findUsersByPreference = async (userId, filters) => {
 		ProfilesUsers = ProfileFameRat;
 	}
 	//console.log('ProfilesUsers before return:', ProfilesUsers);
-    return ProfilesUsers;
+	const usersWithPhotoInfo = ProfilesUsers.map(user => ({
+		...user,
+		currentUserHasPhoto
+	}));
+    return usersWithPhotoInfo;
 };
 
 export const getAllUserPhotos = async (userId) => {
@@ -461,19 +478,13 @@ export const updateInterests = async (userId, interests) => {
 };
 
 export const findUsersInMatch = async (userId) => {
-
-	const isPhotoQuery = `
-		SELECT 1
-		FROM photos p
-		JOIN users u ON u.profile_photo_id = p.id
-		WHERE u.id = $1
-	`;
-	const photoCheckResult = await pool.query(isPhotoQuery, [userId]);
-	console.log(photoCheckResult.rows.length);
-    if (photoCheckResult.rows.length === 0)
-	{
-		return [];
-	}
+	const hasPhotoRes = await pool.query(`
+		SELECT profile_photo_id IS NOT NULL AS has_photo
+		FROM users
+		WHERE id = $1
+	`, [userId]);
+	
+	const currentUserHasPhoto = hasPhotoRes.rows[0]?.has_photo || false;
 
 	const query = `
 	  SELECT 
@@ -506,7 +517,11 @@ export const findUsersInMatch = async (userId) => {
 		u.id, p.url;
 	`;
 	const result = await pool.query(query, [userId]);
-	return result.rows;
+	const usersWithPhotoInfo = result.rows.map(user => ({
+		...user,
+		currentUserHasPhoto
+	}));
+    return usersWithPhotoInfo;
 };
  
 export const updateUserProfile = async (userId, updates) => {

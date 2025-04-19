@@ -20,7 +20,7 @@ export const UserProfile = () => {
 		const fetchUserData = async () => {
 			try {
 				const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/profile/${userId}`, { credentials: "include" });
-				if (!response.ok) throw new Error("Can not find user");
+				if (!response.ok) throw new Error("can not find user");
 				const data = await response.json();
 				setUserData(data);
 			} catch (err) {
@@ -183,14 +183,15 @@ export const UserProfile = () => {
 
 						<div className="flex justify-between items-center w-full mt-6">
 							<div className="flex gap-6">
-								<div onClick={toggleLike} className="cursor-pointer">
-									{userData.profile_photo &&
-										userData.liked_by_user ? (
-											<RiHeart3Fill className="text-red-500" size={32} />
-										) : (
-											<RiHeart3Line size={32} />
-									)}
-								</div>
+								{userData.currentUserHasPhoto && (
+									<div onClick={toggleLike} className="cursor-pointer">
+											userData.liked_by_user ? (
+												<RiHeart3Fill className="text-red-500" size={32} />
+											) : (
+												<RiHeart3Line size={32} />
+										)
+									</div>
+								)}
 
 								{userData.liked_by_user && userData.liked_by_other && (
 									<Link to={`/chat`}>

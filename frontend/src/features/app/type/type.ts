@@ -19,6 +19,7 @@ export type User = {
 	photos: string[];
 	fame_rating: number;
 	last_connected_at: string;
+	currentUserHasPhoto: boolean;
 };
 
 export type View = {

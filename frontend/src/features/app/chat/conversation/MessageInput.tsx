@@ -71,6 +71,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 					onChange={(e) => setNewMessage(e.target.value)}
 					placeholder="Type a message..."
 					className="flex-1 bg-bg rounded-lg px-4 py-2 outline-none text-white text-sm"
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' && newMessage.trim() !== '') {
+							sendMessage();
+						}
+					}}
 				/>
 				<EventPlanning/>
 				<div>
@@ -91,8 +96,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 					)}
 				</div>
 				<button
-					onClick={sendMessage}
-					className="flex items-center gap-2 p-2 bg-pink text-white rounded-lg text-xs"
+					onClick={() => {
+						if (newMessage.trim() !== '') {
+							sendMessage();
+						}
+					}}
+					disabled={newMessage.trim() === ''}
+					className={`flex items-center gap-2 p-2 rounded-lg text-xs transition 
+						${newMessage.trim() === '' ? 'bg-gray-400 cursor-not-allowed' : 'bg-pink text-white'}`}
 				>
 					<BsSend size={16} />
 				</button>
