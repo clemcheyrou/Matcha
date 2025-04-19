@@ -56,8 +56,7 @@ export const login = async (req, res) => {
     const { username, password } = req.body;
     try {
         const user = await getUserByUsername(username);
-        
-        if (!user)
+        if (!user || user.auth_type === 'google' || user.auth_type === 'facebook')
             return res
                 .status(400)
                 .json({ message: "incorrect username or password" });

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-export const Header = () => {
+export const HeaderHome = () => {
   return (
     <header className='mb-16 flex h-16 w-full items-center justify-between pt-16'>
         <div className='flex justify-center'>

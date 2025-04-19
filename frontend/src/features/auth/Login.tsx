@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Header } from "../header/Header.tsx";
 import { Link, useNavigate } from "react-router-dom";
 import { FaFacebook, FaGoogle } from "react-icons/fa";
 import { LuEye, LuEyeOff, LuUserRound } from "react-icons/lu";
@@ -10,6 +9,7 @@ import { fetchUser } from "../../store/slice/authSlice.ts";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store.ts";
 import { useSocialAuth } from "./hooks/useSocialAuth.ts";
+import { HeaderHome } from "../home/header/Header.tsx";
 
 export const Login = () => {
 	const [showPassword, setShowPassword] = useState(false);
@@ -22,8 +22,11 @@ export const Login = () => {
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
+		if (!formData.username || !formData.password) {
+			setError(true);
+			return;
+		}
 		const result = await login(formData);
-
 		if (result.success) {
 			await dispatch(fetchUser());
 			navigate("/home");
@@ -34,7 +37,7 @@ export const Login = () => {
 
 	return (
 		<div className="mb-16 h-screen w-screen text-white px-6 md:px-28 lg:px-96">
-			<Header />
+			<HeaderHome />
 			<div className="flex flex-col items-center justify-center mt-40">
 				<div className="text-center mb-8">
 					<h1 className="text-4xl font-bold mb-2">Login</h1>
@@ -89,8 +92,13 @@ export const Login = () => {
 					{error && <p className="text-red-500">{error}</p>}
 					<button
 						type="submit"
-						className="w-full text-center space-x-4 font-agbalumo text-black rounded-md px-4 py-2 mt-6 bg-pink text-white cursor-pointer hover:bg-white hover:text-pink"
-						>
+						className={`w-full text-center space-x-4 font-agbalumo text-black rounded-md px-4 py-2 mt-6 ${
+							!formData.username || !formData.password
+								? "bg-gray-400 cursor-not-allowed hover:bg-gray-400"
+								: "bg-pink text-white cursor-pointer hover:bg-white hover:text-pink"
+						}`}						
+						disabled={!formData.username || !formData.password}
+					>
 						CONNECT
 					</button>
 					<Link to={"/forgot-password"}><p className="cursor-pointer hover:underline text-right">Forgot your password?</p></Link>

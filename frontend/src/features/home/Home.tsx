@@ -1,12 +1,12 @@
 import React from 'react'
 import { RxArrowTopRight } from "react-icons/rx";
-import { Header } from '../header/Header.tsx';
 import { Link } from 'react-router-dom';
+import { HeaderHome } from './header/Header.tsx';
 
 export const Home = () => {
   return (
     <div className='mb-16 h-screen w-screen text-white px-6 md:px-28 lg:px-96'>
-        <Header/>
+        <HeaderHome/>
         <div className='h-full'>
           <div className='h-88 rounded-lg'>
             <img src='https://plus.unsplash.com/premium_photo-1661609291595-3a849ea67002?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' alt='img' className='w-full h-[40vh] object-cover'/>

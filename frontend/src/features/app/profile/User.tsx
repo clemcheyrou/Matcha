@@ -185,11 +185,11 @@ export const UserProfile = () => {
 							<div className="flex gap-6">
 								{userData.currentUserHasPhoto && (
 									<div onClick={toggleLike} className="cursor-pointer">
-											userData.liked_by_user ? (
+											{userData.liked_by_user ? (
 												<RiHeart3Fill className="text-red-500" size={32} />
 											) : (
 												<RiHeart3Line size={32} />
-										)
+										)}
 									</div>
 								)}
 
