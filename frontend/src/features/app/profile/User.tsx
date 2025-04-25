@@ -20,7 +20,7 @@ export const UserProfile = () => {
 		const fetchUserData = async () => {
 			try {
 				const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/profile/${userId}`, { credentials: "include" });
-				if (!response.ok) throw new Error("Can not find user");
+				if (!response.ok) throw new Error("can not find user");
 				const data = await response.json();
 				setUserData(data);
 			} catch (err) {
@@ -40,10 +40,7 @@ export const UserProfile = () => {
 					...prevData,
 					liked_by_user: updatedProfile.liked_by_user,
 					blocked_by_user: updatedProfile.blocked_by_user,
-					fame_count: updatedProfile.liked_by_user
-					? (Number(prevData.fame_count) || 0) + 1
-					: Math.max(0, (Number(prevData.fame_count) || 0) - 1)
-					//fame_rating: updatedProfile.fame_rating
+					fame_rating: updatedProfile.fame_rating
 				};
 			});
 		};
@@ -150,13 +147,18 @@ export const UserProfile = () => {
 										{userData.last_connected_at && !userData.is_connected && <p className="mt-2 text-[12px]">{lastConnection(userData.last_connected_at)}</p>}
 									</div>
 									<div className="flex items-center justify-between">
-										{userData.distance_km && userData.distance_km >= 0 &&
+										{userData.distance_km && userData.distance_km >= 0 ? (
 											<div className="bg-bg p-1 rounded-md">
-												{userData.distance_km === 0 ? '0 km' : userData.distance_km.toFixed(1)} km
+												{userData.distance_km.toFixed(1)} km
 											</div>
+										 ) : (
+											<div className="bg-bg p-1 rounded-md">
+												0 km
+											</div>
+										 )
 										}
 										<div className="flex items-center gap-1 px-3 rounded-full">
-											<span className="font-medium text-pink-700">🔥 {userData.fame_count}</span>
+											<span className="font-medium text-pink-700">🔥 {userData.fame_rating}</span>
 										</div>
 									</div>
 								</div>
@@ -181,14 +183,15 @@ export const UserProfile = () => {
 
 						<div className="flex justify-between items-center w-full mt-6">
 							<div className="flex gap-6">
-								<div onClick={toggleLike} className="cursor-pointer">
-									{userData.profile_photo &&
-										userData.liked_by_user ? (
-											<RiHeart3Fill className="text-red-500" size={32} />
-										) : (
-											<RiHeart3Line size={32} />
-									)}
-								</div>
+								{userData.currentUserHasPhoto && (
+									<div onClick={toggleLike} className="cursor-pointer">
+											{userData.liked_by_user ? (
+												<RiHeart3Fill className="text-red-500" size={32} />
+											) : (
+												<RiHeart3Line size={32} />
+										)}
+									</div>
+								)}
 
 								{userData.liked_by_user && userData.liked_by_other && (
 									<Link to={`/chat`}>

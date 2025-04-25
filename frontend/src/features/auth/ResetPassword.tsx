@@ -18,8 +18,16 @@ export const ResetPassword = () => {
 	}, [token]);
 
 	const handlePasswordChange = (e) => {
-		setNewPassword(e.target.value);
-	};
+		const password = e.target.value;
+		setNewPassword(password);
+	  
+		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+		if (!passwordRegex.test(password)) {
+		  setMessage("Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one number, and one special character.");
+		} else {
+		  setMessage("");
+		}
+	  };
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -29,6 +37,12 @@ export const ResetPassword = () => {
 		if (!newPassword) {
 			setMessage("please enter a new password");
 			return;
+		}
+
+		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+		if (!passwordRegex.test(newPassword)) {
+		  setMessage("Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one number, and one special character.");
+		  return;
 		}
 
 		if (!token) {
@@ -99,7 +113,7 @@ export const ResetPassword = () => {
 					</button>
 				</form>
 				{message && (
-					<p className="mt-4 text-center text-red-500">{message}</p>
+					<p className="mt-4 text-center text-white">{message}</p>
 				)}
 			</div>
 		</div>

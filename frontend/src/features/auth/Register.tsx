@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Header } from "../header/Header.tsx";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { FaFacebook, FaGoogle } from "react-icons/fa";
 import { LuEye, LuEyeOff, LuUserRound } from "react-icons/lu";
@@ -11,6 +10,7 @@ import { useSocialAuth } from "./hooks/useSocialAuth.ts";
 import { fetchUser } from "../../store/slice/authSlice.ts";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store/store.ts";
+import { HeaderHome } from "../home/header/Header.tsx";
 
 //pas de provider detecte : null / pas token detecter
 //http://localhost:3000/undefined/api/auth/register 404 (
@@ -139,7 +139,7 @@ export const Register = () => {
 
 	return (
 		<div className="mb-16 h-screen w-screen text-white px-6 md:px-28 lg:px-96">
-			<Header />
+			<HeaderHome />
 			<div className="flex flex-col items-center justify-center mt-28">
 				<div className="text-center mb-8">
 					<h1 className="text-4xl font-bold mb-2">
@@ -274,7 +274,7 @@ export const Register = () => {
 						type="submit"
 						className={`w-full text-center font-agbalumo text-black rounded-md px-4 py-2 mt-6 ${
 							isFormValid
-								? "bg-pink text-white hover:bg-white hover:text-pink-500"
+								? "bg-pink text-white hover:bg-white hover:text-pink"
 								: "bg-gray-300 text-gray-500 cursor-not-allowed"
 						}`}
 						disabled={!isFormValid}

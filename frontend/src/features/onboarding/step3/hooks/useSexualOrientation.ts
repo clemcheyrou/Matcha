@@ -15,9 +15,8 @@ export const useSexualOrientation = () => {
 				`${process.env.REACT_APP_API_URL}/api/users/save-orientation`,
 				{
 					method: "PATCH",
-					body: JSON.stringify({
-						orientation: selectedImage,
-					}),
+					headers: {"Content-Type": "application/json"},
+					body: JSON.stringify({ orientation: selectedImage }),
 					credentials: "include",
 				}
 			);

@@ -17,9 +17,9 @@ export type User = {
 	reported_by_user: boolean;
 	distance_km: number;
 	photos: string[];
-	fame_count: number;
-	//fame_rating: number;
+	fame_rating: number;
 	last_connected_at: string;
+	currentUserHasPhoto: boolean;
 };
 
 export type View = {

@@ -5,6 +5,7 @@ import {
 	getUserById,
 } from "../models/userModel.js";
 import {getUserByUsername} from "../models/userModel.js"
+import pool from "../utils/db.js";
 
 export const createOAuthStrategy = (Strategy, provider, options) => {
 	passport.use(
@@ -28,6 +29,12 @@ export const createOAuthStrategy = (Strategy, provider, options) => {
 					const userMail = await getUserByEmail(email);
 					const userUsername = await getUserByUsername(username);
 
+					if (userMail) {
+						if (userMail.auth_type !== provider) {
+							return done(null);
+						}
+					}
+
 					if (!userMail && !userUsername) {
 						const newUser = await createUserSocial(
 							username,
@@ -38,6 +45,10 @@ export const createOAuthStrategy = (Strategy, provider, options) => {
 						);
 						return done(null, { id: newUser.id, accessToken: access_token, profile });
 					} else {
+						await pool.query(`
+							INSERT INTO user_connections (user_id, connected_at)
+							VALUES ($1, CURRENT_TIMESTAMP);
+						`, [userMail.id]);
 						return done(null, { id: userMail.id, accessToken: access_token, profile });
 					}
 				}

@@ -17,17 +17,31 @@ const interestsList = [
   "Art",
 ];
 
+const sortOptions = {
+  pertinent: "Pertinence",
+  ageAsc: "Increasing age",
+  ageDesc: "Descending age",
+  loc: "Nearest location",
+  popAsc: "Increasing popularity",
+  popDesc: "Descending popularity",
+  tag: "Common tag",
+};
+
 export const FilterUser = () => {
   const filters = useSelector((state: RootState) => state.filters);
   const dispatch = useDispatch<AppDispatch>();
-  const [tempFilters, setTempFilters] = useState(filters); // Local state for filters
+  const [tempFilters, setTempFilters] = useState(filters);
+  const selectedOption = useSelector((state: RootState) => state.sort) as keyof typeof sortOptions;
 
   useEffect(() => {
     setTempFilters(filters);
   }, [filters]);
-
   const [isOpen, setIsOpen] = useState(false);
-  const toggleDropdown = () => setIsOpen((prev) => !prev);
+
+  const toggleDropdown = () => {
+    if (selectedOption === 'pertinent')
+      setIsOpen((prev) => !prev);
+  }
 
   const handleRangeChange = (key: string, min: number, max: number) => {
     setTempFilters((prev) => ({

@@ -27,7 +27,7 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 	};
 	if (loading) return <p className="text-center mt-4">Loading...</p>;
 	return (
-		<div className="overflow-y-auto pt-4">
+		<div className="overflow-y-auto pt-4 h-[74vh] pb-6">
 			<div className="overflow-y-auto pt-4 mx-1">
 				{error ? (
 					<div className="text-center">
@@ -107,11 +107,12 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 											toggleLike(user.id, user.liked_by_user)
 										}
 									>
-									{user.profile_photo &&
+									{user.currentUserHasPhoto && (
 										user.liked_by_user ? (
 											<RiHeart3Fill className="w-full h-full" />
 										) : (
 											<RiHeart3Line className="w-full h-full" />
+										)
 										)
 									}
 									</div>
@@ -123,14 +124,19 @@ export const Grid: React.FC<GridProps> = ({ viewMode }) => {
 										</div>
 									)}
 	
-									{user.distance_km && user.distance_km >= 0 && (
-										<div className="flex space-x-1 align-content items-center absolute top-3 left-2 h-6 p-1 text-white text-xs rounded">
-											<div className="bg-bg p-1 rounded-md">
-												{user.distance_km === 0 ? '0' : user.distance_km.toFixed(1)} km
-											</div>
-												<span className="text-xs ml-2">🔥 {user.fame_count}</span>
-										</div>
-									)}
+									<div className="flex space-x-1 align-content items-center absolute top-3 left-2 h-6 p-1 text-white text-xs rounded">
+										{user.distance_km && user.distance_km >= 0 ? (
+												<div className="bg-bg p-1 rounded-md">
+													{user.distance_km.toFixed(1)} km
+												</div>
+											) : (
+												<div className="bg-bg p-1 rounded-md">
+													0 km
+												</div>
+											)
+										}
+										<span className="text-xs ml-2">🔥 {user.fame_rating}</span>
+									</div>
 								</div>
 							))
 						)}

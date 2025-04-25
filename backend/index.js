@@ -106,7 +106,7 @@ app.get("/api/auth/status", async (req, res) => {
 	  try {
 		const result = await pool.query('SELECT onboarding FROM users WHERE id = $1', [req.session.userId]);
 		const onboarding = result.rows[0];
-		res.json({ authenticated: true, onboarding });
+		res.json({ authenticated: true, onboarding});
 	  } catch (err) {
 		console.error('error', err);
 		res.status(500).json({ authenticated: false, error: 'server error' });

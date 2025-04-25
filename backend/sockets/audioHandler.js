@@ -56,6 +56,7 @@ export const audioHandler = (socket) => {
 					.emit("notification", formatNotification(`Receive audio message from ${name}`, authorId, 'message'));
 			}
 			await createNotification(user2Id, 'message', authorId, `Receive audio message from ${name}`);
+			socket.emit("audio-url", audioPath);
 			socket.emit("messageSent", newMessage);
 		} catch (err) {
 			socket.emit("error", { message: "error sending message" });

@@ -133,9 +133,12 @@ export const saveGenderBio = async (req, res) => {
 	const { gender, bio, age } = req.body;
 	const userId = req.session.userId;
 
-	if (!gender || !bio) {
+	if (!gender || !bio || !age) {
 		return res.status(400).json({ message: "all fields are required" });
 	}
+
+	if (age < 18)
+		return res.status(400).json({ message: "age under 18 are not allowed" });
 
 	if (!userId) {
 		return res.status(401).json({ message: "user not authenticated" });
@@ -243,11 +246,13 @@ export const getAllUserLocationsController = async (req, res) => {
 		const { gender, orientation } = user;
 
 		let genderPreference = null;
-		if (orientation === 0) {
+		if (orientation === 0)
 			genderPreference = gender === "Man" ? "Woman" : "Man";
-		} else if (orientation === 1) {
-			genderPreference = gender;
-		}
+		else if (orientation === 1)
+			genderPreference = gender === "Man" ? "Man" : "Woman";
+		else if (orientation === 2)
+			genderPreference = 'All';
+
 		const locations = await getAllUsersLocations(
 			currentUserId,
 			genderPreference

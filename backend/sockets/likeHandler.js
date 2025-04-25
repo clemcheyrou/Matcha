@@ -121,7 +121,7 @@ export const likeHandler = (socket) => {
 			const updatedProfile = await getUserById(likedUserId, userId);
 			socket.emit("profileUpdated", updatedProfile);
 			socket.emit("unlike", likedUserId);
-			socket.to(users[likedUserId]).emit("profileUpdated", updatedProfile);
+			// socket.to(users[likedUserId]).emit("profileUpdated", updatedProfile);
 		} catch (error) {
 			await client.query("ROLLBACK");
 			console.error("error processing unlike:", error);

@@ -21,8 +21,7 @@ export const useProfileForm = () => {
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitized = sanitizeInput(event.target.value);
-    setBio(sanitized);
+    setBio(event.target.value);
   };
 
   const handleSubmit = async () => {

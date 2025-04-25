@@ -99,6 +99,17 @@ export const getAllMessagesFromChat = async (chatId) => {
 	return result.rows;
 };
 
+export const getIsChatExist = async (chatId) => {
+	const query = `
+    SELECT 1
+    FROM chat
+    WHERE chat.id = $1
+  `;
+  
+  	const result = await pool.query(query, [chatId]);
+	return result.rows;
+};
+
 export const markMessagesAsRead = async (chatId, currentUserId) => {
 	const query = `
 		UPDATE message

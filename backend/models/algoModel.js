@@ -12,17 +12,6 @@ export async function findDefaultUsers (userId, pool, filters) {
 			"b.blocked_user_id IS NULL"
 		];
 
-		const isPhotoQuery = `
-			SELECT 1
-			FROM photos p
-			JOIN users u ON u.profile_photo_id = p.id
-			WHERE u.id = $1
-		`;
-		const photoCheckResult = await pool.query(isPhotoQuery, [userId]);
-
-		if (photoCheckResult.rows.length === 0)
-			return [];
-
 		const userGender = await getUserGender(userId);
 
 		let otherPref = '';
@@ -39,14 +28,14 @@ export async function findDefaultUsers (userId, pool, filters) {
 		else if (filters.genderPreference === "Woman") {
 			if (userGender === 'Man')
 				otherPref = `
-					u.gender = 'Man' AND u.orientation IN (0, 2)
+					u.gender = 'Woman' AND u.orientation IN (0, 2)
 				`;
 			if (userGender === 'Woman')
 				otherPref = `
 					u.gender = 'Woman' AND u.orientation IN (1, 2)
 			`;
 		}
-		else {
+		else if (filters.genderPreference === "All") {
 			if (userGender === 'Man')
 				otherPref = `
 					u.gender = 'Man' AND u.orientation IN (1, 2)
@@ -75,13 +64,13 @@ export async function findDefaultUsers (userId, pool, filters) {
 				u.interests,
 				u.is_connected,
 				u.last_connected_at,
+				u.fame_rating,
 				p.url AS profile_photo,
 				6371 * acos(
 					cos(radians(loc1.lat)) * cos(radians(loc2.lat)) *
 					cos(radians(loc2.lng) - radians(loc1.lng)) +
 					sin(radians(loc1.lat)) * sin(radians(loc2.lat))
 				) AS distance_km,
-				(SELECT COUNT(*) FROM likes WHERE liked_user_id = u.id) AS fame_count, 
 				CASE WHEN l.user_id IS NOT NULL THEN true ELSE false END AS liked_by_user,
 				CASE WHEN l2.user_id IS NOT NULL THEN true ELSE false END AS liked_by_other
 			FROM 
@@ -90,12 +79,12 @@ export async function findDefaultUsers (userId, pool, filters) {
 			LEFT JOIN matches m ON (m.user_1_id = u.id AND m.user_2_id = $1) OR (m.user_1_id = $1 AND m.user_2_id = u.id)
 			LEFT JOIN likes l ON l.user_id = $1 AND l.liked_user_id = u.id
 			LEFT JOIN likes l2 ON l2.user_id = u.id AND l2.liked_user_id = $1
-			LEFT JOIN blocks b ON b.user_id = $1 AND b.blocked_user_id = u.id
+			LEFT JOIN blocks b ON (b.user_id = $1 AND b.blocked_user_id = u.id) 
+                   OR (b.user_id = u.id AND b.blocked_user_id = $1)			
 			LEFT JOIN locations loc1 ON loc1.user_id = u.id
 			LEFT JOIN locations loc2 ON loc2.user_id = $1
-			WHERE ${conditions.join(" AND ")}
+			WHERE ${conditions.join(" AND ") } AND b.blocked_user_id IS NULL
 		`;
-		//console.log("Requête SQL générée :", query);
 
 		const result = await pool.query(query, values);
 
@@ -104,7 +93,7 @@ export async function findDefaultUsers (userId, pool, filters) {
         }
 
 		//console.log('Profils récupérés :', result.rows);
-		if (result.rows.length > 1)
+		if (result.rows.length > 0)
 		{
 			const profilesWithSharedTags = await addSharedTagsScore(userId, result.rows, pool);
 			
@@ -126,7 +115,6 @@ export async function findDefaultUsers (userId, pool, filters) {
 			// });
 			return Finalprofiles;
 		}
-		
         return result.rows;
     } catch (error) {
         console.error('Error during profile recovery :', error);
@@ -201,7 +189,6 @@ export async function addDistanceScore(userId, users, pool) {
 		const userLoc = userLocRes.rows[0];
 
 		if (!userLoc) {
-			console.warn("No location found");
 			return users;
 		}
 
@@ -215,7 +202,6 @@ export async function addDistanceScore(userId, users, pool) {
 			const targetLoc = targetLocRes.rows[0];
 
 			if (!targetLoc) {
-				console.warn(`No location found for user ${user.id}`);
 				continue;
 			}
 
@@ -297,6 +283,7 @@ export async function getUsersByAgeRange (users, pool, minAge, maxAge, userId) {
 			u.gender, 
 			u.interests,
 			u.is_connected,
+			u.fame_rating,
 			u.last_connected_at,
 			p.url AS profile_photo,
 			6371 * acos(
@@ -350,6 +337,7 @@ export async function getUsersByLocRange(users, pool, minLoc, maxLoc, userId) {
 			u.gender, 
 			u.interests,
 			u.is_connected,
+			u.fame_rating,
 			u.last_connected_at,
 			p.url AS profile_photo,
 			6371 * acos(
@@ -406,6 +394,7 @@ export async function getUsersByFameRatingRange(users, pool, minFame, maxFame, u
 			u.age, 
 			u.gender, 
 			u.interests,
+			u.fame_rating,
 			u.is_connected,
 			u.last_connected_at,
 			p.url AS profile_photo,

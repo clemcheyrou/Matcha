@@ -4,6 +4,7 @@ import {
 	getAllChats,
 	getAllMessagesFromChat,
 	getChatInfo,
+	getIsChatExist,
 	markMessagesAsRead,
 } from "../models/chatModel.js";
 
@@ -102,6 +103,24 @@ export const getMessagesController = async (req, res) => {
 		const chatMessages = await getAllMessagesFromChat(chatId);
 		if (chatMessages.length === 0) return res.status(200).json([]);
 		res.status(200).json(chatMessages);
+	} catch (error) {
+		res.status(500).json({ error: "error to get chat list" });
+	}
+};
+
+export const getIsChatExistController = async (req, res) => {
+	const currentUserId = req.session.userId;
+	const { chatId } = req.params;
+	if (!currentUserId)
+		return res.status(401).json({ error: "can not find user" });
+	if (!chatId) {
+		return res.status(400).json({ error: "chat ID is required" });
+	}
+
+	try {
+		const chatMessages = await getIsChatExist(chatId);
+		if (chatMessages.length === 0) return res.status(200).json(false);
+		res.status(200).json(true);
 	} catch (error) {
 		res.status(500).json({ error: "error to get chat list" });
 	}

@@ -15,11 +15,29 @@ const sortOptions = {
 
 export const SortUser = () => {
   const [isOpen, setIsOpen] = useState(false);
-
+  const filters = useSelector((state: RootState) => state.filters);
   const selectedOption = useSelector((state: RootState) => state.sort) as keyof typeof sortOptions;
   const dispatch = useDispatch<AppDispatch>();
 
-  const toggleDropdown = () => setIsOpen(prev => !prev);
+  const toggleDropdown = () => {
+    const defaultFilters = {
+      age: [0, 100],
+      location: [0, 1000],
+      fame: [0, 100],
+      tags: [],
+    };
+  
+    const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  
+    if (
+      isEqual(filters.age, defaultFilters.age) &&
+      isEqual(filters.location, defaultFilters.location) &&
+      isEqual(filters.fame, defaultFilters.fame) &&
+      isEqual(filters.tags, defaultFilters.tags)
+    ) {
+      setIsOpen(prev => !prev);
+    }
+  };
 
   const handleOptionClick = (option: string) => {
     dispatch(setSortOption(option));

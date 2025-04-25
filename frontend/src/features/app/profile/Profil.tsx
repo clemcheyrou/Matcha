@@ -104,7 +104,7 @@ export const Profil = () => {
                 <p className="text-lg text-gray-500">{userData.age} years</p>
               </div>
               <div className="flex items-center">
-                <span className="font-medium">🔥 {userData.fame_count}</span>
+                <span className="font-medium">🔥 {userData.fame_rating}</span>
               </div>
             </div>
 

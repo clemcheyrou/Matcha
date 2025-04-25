@@ -31,6 +31,6 @@ export const useUserLocations = () => {
 
         fetchUserLocations();
     }, []);
-
+    console.log(locations)
     return { locations, loading, error };
 };

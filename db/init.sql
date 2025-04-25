@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(100),
-    age INT CHECK (age >= 18),
+    age INT,
     gender VARCHAR(10),
     bio TEXT,
     interests TEXT[],
@@ -88,47 +88,93 @@ CREATE TABLE IF NOT EXISTS matches (
 CREATE INDEX idx_likes_user_liked_user ON likes (user_id, liked_user_id);
 CREATE INDEX idx_matches_user1_user2 ON matches (user_1_id, user_2_id);
 
-INSERT INTO users (username, firstname, lastname, email, password, age, gender, bio, interests, auth_type, oauth_token, orientation)
-VALUES 
-    ('alice123','Alice', 'Dupont', 'alice@example.com', 'Passpass@1', 25, 'Woman', 'test bio', ARRAY['Vegan', 'Fitness', 'Travel'], 'local', NULL, 1),
-    ('Bob21', 'Bob', 'Martin','bob@example.com', 'Passpass@2', 30, 'Man', 'test bio', ARRAY['Books', 'Art', 'Piercing'], 'local', NULL, 2),
-    ('Charlie5', 'Charlie', 'Bordereau','charlie@example.com', 'Passpass@3', 28, 'Woman', 'test bio', ARRAY['Music', 'Gaming', 'Travel'], 'google', 'oauth_token_example', 0),
-    ('David90','David', 'Herman','david@example.com', 'Passpass@4', 35, 'Man', 'test bio', ARRAY['Movies', 'Fitness'], 'facebook', 'oauth_token_example2', 1),
-    ('Emma67','Emma', 'Laurent','emma@example.com', 'Passpass@5', 29, 'Woman', 'test bio', ARRAY['Movies'], 'apple', 'oauth_token_example3', 2)
-ON CONFLICT DO NOTHING;
-
-DO $$ 
+DO $$
 DECLARE 
     i INT := 1;
+    firstnames_men TEXT[] := ARRAY['Alex', 'Bob', 'Charles', 'David', 'Lucas', 'Maxime', 'Nathan', 'Thomas', 'Leo', 'Arthur'];
+    firstnames_women TEXT[] := ARRAY['Emma', 'Sophie', 'Chloe', 'Camille', 'Manon', 'Jade', 'Lina', 'Louise', 'Gabrielle', 'Camille'];
+    lastnames TEXT[] := ARRAY['Martin', 'Bernard', 'Thomas', 'Petit', 'Robert', 'Richard', 'Durand', 'Dubois', 'Moreau', 'Laurent', 'Simon', 'Michel', 'Lefevre', 'Leroy', 'Roux', 'David', 'Bertrand', 'Morel', 'Fournier', 'Girard'];
+    all_interests TEXT[] := ARRAY['Vegan', 'Geek', 'Piercing', 'Music', 'Gaming', 'Fitness', 'Travel', 'Books', 'Movies', 'Art'];
+    user_interests TEXT[];
+    firstname TEXT;
+    lastname TEXT;
+    username TEXT;
+    email TEXT;
+    password TEXT;
+    gender TEXT;
+    orientation INT;
+    bio TEXT := 'test bio';
+    lat_base FLOAT[] := ARRAY[48.8566, 48.8570, 48.8580, 48.8590, 48.8600];
+    lng_base FLOAT[] := ARRAY[2.3522, 2.3500, 2.3488, 2.3470, 2.3460];
+    lat FLOAT;
+    lng FLOAT;
+    loc_index INT;
+    user_id INT;
+    interest_count INT;
 BEGIN
-    FOR i IN 1..5 LOOP
-        INSERT INTO photos (url, type, user_id) 
-        VALUES 
-            ('/uploads/photo_1.jpg', 'default', i),
-            ('/uploads/photo_2.jpg', 'default', i),
-            ('/uploads/photo_3.jpg', 'default', i),
-            ('/uploads/photo_4.jpg', 'default', i),
-            ('/uploads/photo_5.jpg', 'default', i);
-    END LOOP;
+    FOR i IN 1..500 LOOP
 
+        IF i % 2 = 0 THEN
+            gender := 'Man';
+            firstname := firstnames_men[1 + (random() * (array_length(firstnames_men, 1) - 1))::INT];
+        ELSE
+            gender := 'Woman';
+            firstname := firstnames_women[1 + (random() * (array_length(firstnames_women, 1) - 1))::INT];
+        END IF;
+
+        lastname := lastnames[1 + (random() * (array_length(lastnames, 1) - 1))::INT];
+        username := lower(firstname || '_' || lastname || '_' || i);
+        email := username || '@example.com';
+        password := 'password' || i;
+        orientation := i % 3;
+
+        interest_count := 2 + (random() * 4)::INT;
+        user_interests := ARRAY(SELECT unnest(all_interests) ORDER BY random() LIMIT interest_count);
+
+        INSERT INTO users (username, firstname, lastname, email, password, age, gender, bio, interests, auth_type, oauth_token, orientation)
+        VALUES (
+            username, firstname, lastname, email, password,
+            18 + (i % 40), gender, bio, user_interests,
+            'local', NULL, orientation
+        )
+        RETURNING id INTO user_id;
+
+        IF gender = 'Man' THEN
+            INSERT INTO photos (url, type, user_id) 
+            VALUES 
+                ('/uploads/photo_6.jpg', 'default', user_id),
+                ('/uploads/photo_7.jpg', 'default', user_id),
+                ('/uploads/photo_8.jpg', 'default', user_id),
+                ('/uploads/photo_9.jpg', 'default', user_id),
+                ('/uploads/photo_10.jpg', 'default', user_id);
+        ELSE
+            INSERT INTO photos (url, type, user_id) 
+            VALUES 
+                ('/uploads/photo_1.jpg', 'default', user_id),
+                ('/uploads/photo_2.jpg', 'default', user_id),
+                ('/uploads/photo_3.jpg', 'default', user_id),
+                ('/uploads/photo_4.jpg', 'default', user_id),
+                ('/uploads/photo_5.jpg', 'default', user_id);
+        END IF;
+
+        UPDATE users
+        SET profile_photo_id = (
+            SELECT id FROM photos 
+            WHERE photos.user_id = users.id
+            ORDER BY id ASC
+            LIMIT 1
+        )
+        WHERE users.id = user_id;
+
+        loc_index := (i % 5) + 1;
+        lat := lat_base[loc_index] + ((random() - 0.5) / 1000);
+        lng := lng_base[loc_index] + ((random() - 0.5) / 1000);
+
+        INSERT INTO locations (user_id, lat, lng)
+        VALUES (user_id, lat, lng);
+    END LOOP;
 END $$;
 
-WITH photo_ids AS (
-    SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS row_num FROM photos WHERE type = 'default'
-)
-
-UPDATE users
-SET profile_photo_id = (
-    SELECT id FROM photo_ids WHERE row_num = users.id % (SELECT COUNT(*) FROM photo_ids) + 1
-);
-
-INSERT INTO locations (user_id, lat, lng)
-VALUES 
-    ((SELECT id FROM users WHERE email = 'alice@example.com'), 48.8566, 2.3522),
-    ((SELECT id FROM users WHERE email = 'bob@example.com'), 48.8570, 2.3500),
-    ((SELECT id FROM users WHERE email = 'charlie@example.com'), 48.8580, 2.3488),
-    ((SELECT id FROM users WHERE email = 'david@example.com'), 48.8590, 2.3470),
-    ((SELECT id FROM users WHERE email = 'emma@example.com'), 48.8600, 2.3460);
 
 INSERT INTO reports (user_id, reported_user_id)
 VALUES (1, 2);

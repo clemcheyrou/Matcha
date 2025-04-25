@@ -1,5 +1,6 @@
 import { formatNotification } from '../controllers/notificationController.js';
 import { users } from '../index.js';
+import { hasBlocked } from '../models/blockModel.js';
 import { createNotification } from '../models/notificationModel.js';
 import { getUserById } from '../models/userModel.js';
 import { logProfileView } from '../models/viewModel.js';
@@ -17,9 +18,11 @@ export const viewHandler = (socket) => {
         }
 		const user = await getUserById(userId);
 		const name = user.username;
-		
-		await createNotification(viewedUserId, 'view', userId, `${name} see your profile!`);
-		socket.to(viewedUserSocketId).emit('notification', formatNotification(`${name} see your profile`, userId, 'view'))
+		const likedUserBlocked = await hasBlocked(viewedUserId, userId);
+		if (!likedUserBlocked) {
+			await createNotification(viewedUserId, 'view', userId, `${name} see your profile!`);
+			socket.to(viewedUserSocketId).emit('notification', formatNotification(`${name} see your profile`, userId, 'view'))
+		}
 	}
 	)
 }

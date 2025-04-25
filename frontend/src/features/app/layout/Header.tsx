@@ -54,7 +54,6 @@ export const Header = () => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-
         try {
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
@@ -68,13 +67,15 @@ export const Header = () => {
             body: JSON.stringify({ lat: latitude, lng: longitude }),
             credentials: 'include',
           });
-
-		  dispatch(setLocation({ lat: latitude, lng: longitude, city: newCity }));
+		    dispatch(setLocation({ lat: latitude, lng: longitude, city: newCity }));
         } catch (error) {
           console.error('error sending localisation:', error);
         }
       },
-      (error) => console.error('error fetching:', error)
+      (error) => console.error('error fetching:', error),
+      {
+        enableHighAccuracy: true,
+      }
     );
   };
 
